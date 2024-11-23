@@ -5,6 +5,7 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import sceneImage from '../assets/scene.png';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -332,12 +333,18 @@ const Simulation = () => {
                   borderRadius: '50%',
                   width: 120,
                   height: 120,
+                  minWidth: 120,
+                  padding: 0,
                   fontSize: '1.5rem',
                   textTransform: 'none',
                   zIndex: 2,
                   background: loading ? 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' : 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
                   boxShadow: loading ? '0 0 20px rgba(33, 203, 243, 0.5)' : 'none',
                   transition: 'all 0.3s ease',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   '&:hover': {
                     background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
                     transform: 'scale(1.05)',
@@ -347,7 +354,19 @@ const Simulation = () => {
                   }
                 }}
               >
-                {loading ? `${progress}%` : 'Run'}
+                {loading ? `${progress}%` : (
+                  <Box
+                    component="img"
+                    src={sceneImage}
+                    alt="Run Simulation"
+                    sx={{
+                      width: '80%',
+                      height: '80%',
+                      objectFit: 'contain',
+                      filter: 'brightness(0) invert(1)', // Makes the image white
+                    }}
+                  />
+                )}
               </AnimatedButton>
             </Box>
           </Paper>
