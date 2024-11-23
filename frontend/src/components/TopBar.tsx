@@ -1,41 +1,47 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Box, useTheme } from '@mui/material';
+import { Box, Toolbar, Typography, useTheme, Divider } from '@mui/material';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import PercentIcon from '@mui/icons-material/Percent';
+import { useScenario } from '../context/ScenarioContext';
+import OptimizationModeSwitch from './OptimizationModeSwitch';
 
-const TopBar = () => {
+interface TopBarProps {
+  spacing?: number;
+}
+
+const TopBar: React.FC<TopBarProps> = ({ spacing = 2 }) => {
   const theme = useTheme();
+  const { utilization, efficiency } = useScenario();
+
+  const formatPercentage = (value: number) => {
+    return `${Math.round(value * 100)}%`;
+  };
+
   const metrics = [
     { 
-      label: 'Active Fleet', 
-      value: '42', 
+      label: 'Utilization', 
+      value: formatPercentage(utilization), 
       color: 'success.main',
-      icon: <DirectionsCarIcon sx={{ fontSize: 16 }} />
+      icon: <PercentIcon sx={{ fontSize: 16 }} />
     },
     { 
-      label: 'In Service', 
-      value: '15', 
+      label: 'Efficiency', 
+      value: formatPercentage(efficiency), 
       color: 'warning.main',
-      icon: <AutorenewIcon sx={{ fontSize: 16 }} />
-    },
-    { 
-      label: 'Critical', 
-      value: '3', 
-      color: 'error.main',
-      icon: <DirectionsCarIcon sx={{ fontSize: 16 }} />
-    },
+      icon: <PercentIcon sx={{ fontSize: 16 }} />
+    }
   ];
 
   return (
-    <AppBar 
-      position="fixed" 
-      sx={{ 
-        zIndex: (theme) => theme.zIndex.drawer + 1,
+    <Box
+      sx={{
+        borderRadius: '12px',
         background: 'linear-gradient(45deg, #ffffff 30%, #f8fafc 90%)',
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.05), 0px 4px 8px rgba(0, 0, 0, 0.08)',
       }}
     >
-      <Toolbar sx={{ minHeight: { xs: '72px' } }}>
-        {/* Logo */}
+      <Toolbar sx={{ height: '72px', display: 'flex', alignItems: 'center', py: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
           <Typography 
             variant="h6" 
@@ -51,63 +57,55 @@ const TopBar = () => {
             }}
           >
             <DirectionsCarIcon sx={{ fontSize: 28 }} />
-            AutoFleet AI
+            UbiR
           </Typography>
         </Box>
 
-        {/* Metrics */}
         <Box sx={{ 
           display: 'flex', 
-          gap: 2,
-          my: -2,
-          '& > div': {
-            transition: 'transform 0.2s',
-            '&:hover': {
-              transform: 'translateY(-2px)',
-            }
-          }
+          gap: 3,
+          height: '48px'
         }}>
           {metrics.map((metric, index) => (
-            <Box
-              key={index}
-              sx={{
-                background: theme.palette.background.paper,
-                borderRadius: 2,
-                padding: '12px 20px',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                minWidth: 120,
-                my: 2,
-              }}
-            >
-              <Typography 
-                variant="caption" 
-                display="block" 
-                sx={{ 
-                  color: theme.palette.text.secondary,
+            <React.Fragment key={metric.label}>
+              <Box
+                sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 0.5,
-                  mb: 0.5
+                  gap: 1,
                 }}
               >
-                {metric.icon}
-                {metric.label}
-              </Typography>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  color: metric.color,
-                  fontWeight: 600,
-                  fontSize: '1.1rem'
-                }}
-              >
-                {metric.value}
-              </Typography>
-            </Box>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'text.secondary', fontWeight: 500 }}
+                >
+                  {metric.label}
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    color: metric.color,
+                    fontWeight: 600,
+                  }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 'inherit' }}>
+                    {metric.value}
+                  </Typography>
+                  {metric.icon}
+                </Box>
+              </Box>
+              {index < metrics.length - 1 && (
+                <Divider orientation="vertical" flexItem sx={{ my: 2 }} />
+              )}
+            </React.Fragment>
           ))}
+          <Divider orientation="vertical" flexItem sx={{ my: 2 }} />
+          <OptimizationModeSwitch />
         </Box>
       </Toolbar>
-    </AppBar>
+    </Box>
   );
 };
 

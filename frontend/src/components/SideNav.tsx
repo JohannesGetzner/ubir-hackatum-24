@@ -1,14 +1,13 @@
 import React from 'react';
 import { 
-  Drawer, 
   List, 
   ListItem, 
   ListItemIcon, 
   ListItemText, 
-  Toolbar, 
   useTheme,
   Box,
-  ListItemButton
+  ListItemButton,
+  Paper
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -17,7 +16,9 @@ import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import PeopleIcon from '@mui/icons-material/People';
 import TimelineIcon from '@mui/icons-material/Timeline';
 
-const drawerWidth = 240;
+interface SideNavProps {
+  spacing?: number;
+}
 
 const menuItems = [
   { text: 'Overview', icon: <DashboardIcon />, path: '/' },
@@ -27,86 +28,79 @@ const menuItems = [
   { text: 'Predictions', icon: <TimelineIcon />, path: '/predictions' },
 ];
 
-const SideNav = () => {
+const SideNav: React.FC<SideNavProps> = ({ spacing = 2 }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
 
   return (
-    <Drawer
-      variant="permanent"
+    <Paper
+      elevation={0}
       sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: drawerWidth,
-          boxSizing: 'border-box',
-          background: theme.palette.background.paper,
-          borderRight: `1px solid ${theme.palette.secondary.main}`,
-        },
+        borderRadius: '12px',
+        background: 'linear-gradient(45deg, #ffffff 30%, #f8fafc 90%)',
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1), 0px 8px 16px rgba(0, 0, 0, 0.1)',
+        p: 2,
+        height: '100%'
       }}
     >
-      <Toolbar /> {/* Space for the TopBar */}
-      <Box sx={{ overflow: 'auto', mt: 2 }}>
-        <List>
-          {menuItems.map((item) => {
-            const isSelected = location.pathname === item.path;
-            return (
-              <ListItem 
-                key={item.text} 
-                disablePadding
-                sx={{ mb: 1 }}
-              >
-                <ListItemButton
-                  onClick={() => navigate(item.path)}
-                  selected={isSelected}
-                  sx={{
-                    mx: 2,
-                    borderRadius: 2,
-                    '&.Mui-selected': {
-                      backgroundColor: theme.palette.primary.main + '15',
-                      '&:hover': {
-                        backgroundColor: theme.palette.primary.main + '25',
-                      },
-                      '& .MuiListItemIcon-root': {
-                        color: theme.palette.primary.main,
-                      },
-                      '& .MuiListItemText-primary': {
-                        color: theme.palette.primary.main,
-                        fontWeight: 600,
-                      },
-                    },
+      <List>
+        {menuItems.map((item) => {
+          const isSelected = location.pathname === item.path;
+          return (
+            <ListItem 
+              key={item.text} 
+              disablePadding
+              sx={{ mb: 1 }}
+            >
+              <ListItemButton
+                onClick={() => navigate(item.path)}
+                selected={isSelected}
+                sx={{
+                  borderRadius: 2,
+                  '&.Mui-selected': {
+                    backgroundColor: theme.palette.primary.main + '15',
                     '&:hover': {
-                      backgroundColor: theme.palette.secondary.main + '50',
+                      backgroundColor: theme.palette.primary.main + '25',
                     },
+                    '& .MuiListItemIcon-root': {
+                      color: theme.palette.primary.main,
+                    },
+                    '& .MuiListItemText-primary': {
+                      color: theme.palette.primary.main,
+                      fontWeight: 600,
+                    },
+                  },
+                  '&:hover': {
+                    backgroundColor: theme.palette.secondary.main + '50',
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 40,
+                    color: isSelected 
+                      ? theme.palette.primary.main 
+                      : theme.palette.text.secondary,
                   }}
                 >
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 40,
-                      color: isSelected 
-                        ? theme.palette.primary.main 
-                        : theme.palette.text.secondary,
-                    }}
-                  >
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary={item.text}
-                    sx={{
-                      '& .MuiListItemText-primary': {
-                        fontSize: '0.95rem',
-                        fontWeight: isSelected ? 600 : 400,
-                      },
-                    }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
-        </List>
-      </Box>
-    </Drawer>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={item.text}
+                  sx={{
+                    '& .MuiListItemText-primary': {
+                      fontSize: '0.95rem',
+                      fontWeight: isSelected ? 600 : 400,
+                    },
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
+      </List>
+    </Paper>
   );
 };
 

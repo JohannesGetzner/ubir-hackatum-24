@@ -8,7 +8,7 @@ from models import Base, Scenario, Vehicle, Customer, Assignment
 # Create engine
 DB_PATH = Path("instance/hackathon.db")
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-engine = create_engine(f"sqlite:///{DB_PATH}", echo=True)
+engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
 
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

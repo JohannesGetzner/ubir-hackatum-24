@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Box, CssBaseline, ThemeProvider } from '@mui/material';
 import { theme } from './theme';
 import TopBar from './components/TopBar';
@@ -9,37 +9,72 @@ import Map from './pages/Map';
 import Fleet from './pages/Fleet';
 import Customers from './pages/Customers';
 import Predictions from './pages/Predictions';
+import { ScenarioProvider } from './context/ScenarioContext';
+import { OptimizationModeProvider } from './context/OptimizationModeContext';
 
-function App() {
+const SPACING = 2; // 16px in MUI spacing units
+const SIDEBAR_WIDTH = 240;
+
+const AppContent = () => {
+  return (
+    <Box sx={{ 
+      display: 'flex',
+      flexDirection: 'column',
+      bgcolor: '#f0f2f5',
+      minHeight: '100vh',
+      p: SPACING
+    }}>
+      {/* Top Bar Container */}
+      <Box sx={{ width: '100%', mb: SPACING }}>
+        <TopBar spacing={SPACING} />
+      </Box>
+
+      {/* Main Content Area */}
+      <Box sx={{ 
+        display: 'flex',
+        flex: 1,
+        gap: SPACING
+      }}>
+        {/* Sidebar */}
+        <Box sx={{ 
+          width: SIDEBAR_WIDTH,
+          flexShrink: 0
+        }}>
+          <SideNav spacing={SPACING} />
+        </Box>
+
+        {/* Page Content */}
+        <Box sx={{ 
+          flex: 1,
+          overflow: 'hidden',
+          borderRadius: 2
+        }}>
+          <Routes>
+            <Route path="/" element={<Overview />} />
+            <Route path="/map" element={<Map />} />
+            <Route path="/fleet" element={<Fleet />} />
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/predictions" element={<Predictions />} />
+          </Routes>
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+const App = () => {
   return (
     <ThemeProvider theme={theme}>
-      <Router>
-        <Box sx={{ display: 'flex', bgcolor: 'background.default', minHeight: '100vh' }}>
-          <CssBaseline />
-          <TopBar />
-          <SideNav />
-          <Box
-            component="main"
-            sx={{
-              flexGrow: 1,
-              p: 3,
-              width: { sm: `calc(100% - 240px)` },
-              mt: 8,
-              overflow: 'hidden',
-            }}
-          >
-            <Routes>
-              <Route path="/" element={<Overview />} />
-              <Route path="/map" element={<Map />} />
-              <Route path="/fleet" element={<Fleet />} />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/predictions" element={<Predictions />} />
-            </Routes>
-          </Box>
-        </Box>
-      </Router>
+      <CssBaseline />
+      <OptimizationModeProvider>
+        <ScenarioProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </ScenarioProvider>
+      </OptimizationModeProvider>
     </ThemeProvider>
   );
-}
+};
 
 export default App;

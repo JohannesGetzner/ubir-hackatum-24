@@ -153,6 +153,14 @@ class AssignmentRepository:
         )
         return list(self.db.scalars(stmt))
 
+    def get_active_assignment(self, scenario_id: UUID, vehicle_id: UUID) -> Optional[Assignment]:
+        stmt = select(Assignment).where(
+            Assignment.scenario_id == scenario_id,
+            Assignment.vehicle_id == vehicle_id,
+            Assignment.status == AssignmentStatus.IN_PROGRESS
+        )
+        return self.db.scalar(stmt)
+
     def update(self, assignment: Assignment) -> Assignment:
         self.db.merge(assignment)
         self.db.commit()

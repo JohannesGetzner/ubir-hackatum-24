@@ -23,7 +23,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3333:3333"
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -45,10 +45,23 @@ services:
       - "3001:3000"
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./backend/instance/hackathon.db:/var/lib/grafana/hackathon.db
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=hackatum
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_SECURITY_COOKIE_SAMESITE=none
+      - GF_SECURITY_COOKIE_SECURE=true
+      - GF_SECURITY_X_FRAME_OPTIONS=
+      - GF_SERVER_PROTOCOL=http
+      - GF_DATABASE_TYPE=sqlite3
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
     networks:
       - app-network
 
