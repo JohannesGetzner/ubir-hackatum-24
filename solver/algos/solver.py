@@ -20,14 +20,16 @@ def solve(
     vehicles: list[dict],
     customers: list[dict],
 ) -> dict:
-    random_sol = importlib.import_module("random_.solution")
-    genetic_sol = importlib.import_module("genetic.solution")
+    random_sol = importlib.import_module(".random_.solution", package="algos")
+    genetic_sol = importlib.import_module(".genetic.solution", package="algos")
     start_time = time.perf_counter()
     random_sol, random_stats = random_sol.solve(vehicles, customers)
     elapsed_seconds_random = time.perf_counter() - start_time
 
     start_time = time.perf_counter()
-    genetic_sol, genetic_stats = genetic_sol.solve(vehicles, customers)
+    genetic_sol, genetic_stats = genetic_sol.solve(
+        vehicles, customers, max_generations=(len(vehicles) + len(customers)) * 2
+    )
     elapsed_seconds_genetic = time.perf_counter() - start_time
 
     return {
