@@ -1,0 +1,22 @@
+meta {
+  name: Update Scenario
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://127.0.0.1:8090/Scenarios/update_scenario/{scenario_id}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "vehicles": [
+      {
+        "id": "602625bc-0faa-477d-a4ff-e2d2ac53417a",
+        "customerId": "aaec0419-d132-46c2-9f89-53c902783073"
+      }
+    ]
+  }
+}
