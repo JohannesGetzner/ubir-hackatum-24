@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Start both the application and simulation stacks
-docker compose -f docker-compose-app.yml up -d
-docker compose -f docker-compose-simulation.yml up -d
+docker compose -f docker-compose-app.yml up --build
+docker compose -f docker-compose-simulation.yaml pull
+docker compose -f docker-compose-simulation.yaml up
 
 echo "All services started. Use 'docker compose down' to stop them."
