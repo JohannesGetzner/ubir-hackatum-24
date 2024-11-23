@@ -5,8 +5,10 @@ from datetime import datetime
 
 from scenario_generator_client import ScenarioGeneratorClient
 from scenario_runner_client import ScenarioRunnerClient, Scenario as RunnerScenario
-from database.repositories import ScenarioRepository
+from database.repositories import ScenarioRepository, VehicleRepository, CustomerRepository
 from models.scenario import Scenario
+from models.vehicle import Vehicle
+from models.customer import Customer
 from models.base import ScenarioStatus
 from sqlalchemy.orm import Session
 
@@ -24,8 +26,10 @@ class ScenarioEngine:
         self.generator = ScenarioGeneratorClient(generator_url)
         self.runner = ScenarioRunnerClient(runner_url)
         self.scenario_repo = ScenarioRepository(db)
+        self.vehicle_repo = VehicleRepository(db)
+        self.customer_repo = CustomerRepository(db)
 
-    def create_and_initialize_scenario(
+    def create_scenario(
         self,
         num_vehicles: Optional[int] = None,
         num_customers: Optional[int] = None
@@ -55,6 +59,32 @@ class ScenarioEngine:
                 status=ScenarioStatus.CREATED
             )
             self.scenario_repo.create(db_scenario)
+
+            # Save vehicles to database
+            logger.info("Saving vehicles to database...")
+            for vehicle_dto in scenario_dto.vehicles:
+                vehicle = Vehicle(
+                    scenario_id=str(scenario_dto.id),
+                    vehicle_id=str(vehicle_dto.id),
+                    coord_x=vehicle_dto.coordX,
+                    coord_y=vehicle_dto.coordY
+                
+                )
+                self.vehicle_repo.create(vehicle)
+
+            # Save customers to database
+            logger.info("Saving customers to database...")
+            for customer_dto in scenario_dto.customers:
+                customer = Customer(
+                    scenario_id=str(scenario_dto.id),
+                    customer_id=str(customer_dto.id),
+                    coord_x=customer_dto.coordX,
+                    coord_y=customer_dto.coordY,
+                    destination_x=customer_dto.destinationX,
+                    destination_y=customer_dto.destinationY,
+                    awaiting_service=True 
+                )
+                self.customer_repo.create(customer)
             
             # Convert DTO to Runner's Scenario format
             runner_scenario = RunnerScenario(
@@ -65,18 +95,21 @@ class ScenarioEngine:
                 customers=scenario_dto.customers,
                 vehicles=scenario_dto.vehicles
             )
-            
-            # Step 2: Initialize scenario in runner
-            logger.info(f"Initializing scenario {runner_scenario.id}...")
-            success = self.runner.initialize_scenario(runner_scenario)
-            
-            if not success:
-                logger.error("Failed to initialize scenario")
-                return None
-                
-            logger.info(f"Successfully created and initialized scenario {runner_scenario.id}")
-            return scenario_dto.id
-            
-        except Exception as e:
-            logger.error(f"Error creating scenario: {str(e)}")
+            return scenario_dto
+        except:
+            logger.error("Failed to create scenario")
             return None
+            
+
+    def initialize_scenario(self, scenario: Scenario) -> bool:
+        # Step 2: Initialize scenario in runner
+        logger.info(f"Initializing scenario {scenario.id}...")
+        try:
+            success = self.runner.initialize_scenario(scenario)
+            logger.info(f"Successfully created and initialized scenario {scenario.id}")
+            return True
+        except:
+            logger.error(f"Failed to initialize scenario {scenario.id}")
+            return False
+            
+       

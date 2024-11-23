@@ -10,6 +10,7 @@ app = Flask(__name__)
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/hackathon.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ECHO'] = False  # Disable SQL Alchemy logging
 db = SQLAlchemy(app)
 
 # Initialize database tables
@@ -31,14 +32,16 @@ def create_and_initialize_scenario():
     
     try:
         # Create and initialize the scenario using the engine
-        scenario = engine.create_and_initialize_scenario(
+        scenario = engine.create_scenario(
             num_vehicles=num_vehicles,
             num_customers=num_customers
         )
+
+        engine.initialize_scenario(scenario)
         
         return jsonify({
             'status': 'success',
-            'scenario_id': str(scenario) if scenario else None,
+            'scenario_id': str(scenario.id) if scenario else None,
             'num_vehicles': num_vehicles,
             'num_customers': num_customers
         })
