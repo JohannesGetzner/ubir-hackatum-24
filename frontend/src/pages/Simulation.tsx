@@ -33,10 +33,104 @@ const pulse = keyframes`
   }
 `;
 
+const lightning = keyframes`
+  0% {
+    box-shadow: 0 0 5px #2196F3,
+                0 0 10px #2196F3,
+                0 0 20px #2196F3;
+  }
+  50% {
+    box-shadow: 0 0 10px #21CBF3,
+                0 0 20px #21CBF3,
+                0 0 40px #21CBF3,
+                0 0 80px #21CBF3;
+  }
+  100% {
+    box-shadow: 0 0 5px #2196F3,
+                0 0 10px #2196F3,
+                0 0 20px #2196F3;
+  }
+`;
+
+const electricPulse = keyframes`
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+`;
+
+const rotatingLightning = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`;
+
+const lightningFlash = keyframes`
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+`;
+
 const AnimatedButton = styled(Button)(({ theme }) => ({
   position: 'relative',
   '&.pulsing': {
     animation: `${pulse} 2s infinite`,
+  },
+  '&.loading': {
+    '&::before, &::after': {
+      content: '""',
+      position: 'absolute',
+      top: -2,
+      left: -2,
+      right: -2,
+      bottom: -2,
+      borderRadius: '50%',
+      background: 'conic-gradient(from 0deg, transparent, transparent 45deg, #21CBF3 45deg, #21CBF3 90deg, transparent 90deg)',
+      animation: `${rotatingLightning} 1s linear infinite, ${lightningFlash} 0.5s ease-in-out infinite`,
+    },
+    '&::after': {
+      animation: `${rotatingLightning} 1s linear infinite reverse, ${lightningFlash} 0.5s ease-in-out infinite 0.25s`,
+      background: 'conic-gradient(from 180deg, transparent, transparent 45deg, #2196F3 45deg, #2196F3 90deg, transparent 90deg)',
+    },
+    '& .lightning-arc': {
+      position: 'absolute',
+      top: -1,
+      left: -1,
+      right: -1,
+      bottom: -1,
+      borderRadius: '50%',
+      border: '2px solid transparent',
+      borderTopColor: '#21CBF3',
+      borderRightColor: '#2196F3',
+      animation: `${rotatingLightning} 2s linear infinite`,
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: '10%',
+        left: '10%',
+        right: '10%',
+        bottom: '10%',
+        borderRadius: '50%',
+        border: '2px solid transparent',
+        borderTopColor: '#2196F3',
+        borderLeftColor: '#21CBF3',
+        animation: `${rotatingLightning} 1.5s linear infinite reverse`,
+      }
+    }
   },
   '&:hover': {
     transform: 'scale(1.05)',
@@ -328,7 +422,7 @@ const Simulation = () => {
                 size="large"
                 onClick={handleClick}
                 disabled={loading}
-                className={!loading ? 'pulsing' : ''}
+                className={loading ? 'loading' : 'pulsing'}
                 sx={{
                   borderRadius: '50%',
                   width: 120,
@@ -339,22 +433,32 @@ const Simulation = () => {
                   textTransform: 'none',
                   zIndex: 2,
                   background: loading ? 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' : 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
-                  boxShadow: loading ? '0 0 20px rgba(33, 203, 243, 0.5)' : 'none',
                   transition: 'all 0.3s ease',
-                  overflow: 'hidden',
+                  overflow: 'visible',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   '&:hover': {
                     background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
-                    transform: 'scale(1.05)',
+                    transform: loading ? 'none' : 'scale(1.05)',
                   },
                   '&:active': {
-                    transform: 'scale(0.95)',
+                    transform: loading ? 'none' : 'scale(0.95)',
                   }
                 }}
               >
-                {loading ? `${progress}%` : (
+                <div className="lightning-arc" />
+                {loading ? (
+                  <Typography 
+                    variant="h4" 
+                    sx={{ 
+                      color: 'white',
+                      textShadow: '0 0 10px rgba(255,255,255,0.8)',
+                    }}
+                  >
+                    {`${progress}%`}
+                  </Typography>
+                ) : (
                   <Box
                     component="img"
                     src={sceneImage}
