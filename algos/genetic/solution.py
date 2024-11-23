@@ -13,11 +13,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from models import Scenario
 
 # Define the problem constraints.
-POPULATION_SIZE = 500
+POPULATION_SIZE = 50
 P_CROSSOVER = 0.9
-P_MUTATION = 0.1
+P_MUTATION = 0.4
 MAX_GENERATIONS = 500
-HALL_OF_FAME_SIZE = 30
+HALL_OF_FAME_SIZE = 5
 
 # Define random seed.
 RANDOM_SEED = 13
@@ -133,10 +133,13 @@ def solve(
     print("Best Individual")
     print("===============")
     print(hof.items[0])
-    print("With fitness values of:", hof.items[0].fitness)
+    print("\nWith fitness values of:", hof.items[0].fitness)
+    print()
 
     # Return the min and mean values.
-    mean_fitness_vals, min_fitness_vals, max_fitness_vals = logbook.select("avg", "min", "max")
+    mean_fitness_vals, min_fitness_vals, max_fitness_vals = logbook.select(
+        "avg", "min", "max"
+    )
 
     mean_fitness_vals = np.array(mean_fitness_vals)
     min_fitness_vals = np.array(min_fitness_vals)

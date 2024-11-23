@@ -1,7 +1,8 @@
 """Utilities.
 
-Code taken from https://github.com/DreamJarsAI/Apply-AI-like-a-Pro licensed
-under the MIT license.
+Code taken with minor modifications from
+https://github.com/DreamJarsAI/Apply-AI-like-a-Pro, licensed under the MIT
+license.
 """
 
 from deap import algorithms, tools
@@ -15,7 +16,7 @@ def ea_simple_with_elitism(
     ngen,
     stats=None,
     halloffame=None,
-    verbose=__debug__,
+    verbose=False,
 ):
     """This algorithm is similar to DEAP eaSimple() algorithm, with the modification that
     halloffame is used to implement an elitism mechanism. The individuals contained in the
@@ -44,7 +45,6 @@ def ea_simple_with_elitism(
 
     # Begin the generational process
     for gen in range(1, ngen + 1):
-
         # Select the next generation individuals
         offspring = toolbox.select(population, len(population) - hof_size)
 

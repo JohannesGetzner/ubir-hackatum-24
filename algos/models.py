@@ -1,6 +1,6 @@
 import math
 
-ASSUMED_SPEED: float = 15.0
+ASSUMED_SPEED: float = 4.2
 assert ASSUMED_SPEED > 0, "the assumed speed must be greater than 0."
 
 
@@ -31,11 +31,11 @@ class Scenario:
                 customer["destinationY"],
             )
             # Distance from taxi to customer.
-            pickup_distance = Scenario._euclidean_distance(
+            pickup_distance = Scenario._haversine_distance(
                 vehicle_x, vehicle_y, customer_origin_x, customer_origin_y
             )
             # Distance from customer origin to destination.
-            travel_distance = Scenario._euclidean_distance(
+            travel_distance = Scenario._haversine_distance(
                 customer_origin_x,
                 customer_origin_y,
                 customer_destination_x,
@@ -48,5 +48,19 @@ class Scenario:
         return total_distance, total_waiting_time
 
     @classmethod
-    def _euclidean_distance(cls, x1, y1, x2, y2) -> float:
-        return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    def _haversine_distance(cls, lat1, lon1, lat2, lon2) -> float:
+        """Calculate the total distance between start point and customer."""
+        R = 6371  # Radius of earth in kilometers. Use 3956 for miles. Determines return value units.
+
+        # Convert to radians.
+        lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])
+
+        # Haversine formula.
+        dlon = lon2 - lon1
+        dlat = lat2 - lat1
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+        )
+        c = 2 * math.asin(math.sqrt(a))
+        return c * R
