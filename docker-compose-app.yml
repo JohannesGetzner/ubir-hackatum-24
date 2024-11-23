@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  app-backend:
+    container_name: app-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+    volumes:
+      - ./backend:/app
+      - sqlite_data:/app/instance
+    networks:
+      - app-network
+
+  app-frontend:
+    container_name: app-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - app-backend
+    networks:
+      - app-network
+    stdin_open: true
+    tty: true
+
+  app-grafana:
+    container_name: app-grafana
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=hackatum
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  sqlite_data:
+  grafana_data:
