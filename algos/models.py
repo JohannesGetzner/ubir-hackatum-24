@@ -14,7 +14,6 @@ class Scenario:
 
     def calculate_cost(self, individual: list[tuple[int, int]]):
         total_distance: float = 0.0
-        total_active_time: float = 0.0  # time a taxi is active
         total_waiting_time: float = 0.0  # time a customer is waiting
         for gen in individual:
             # Get vehicle position.
@@ -43,12 +42,10 @@ class Scenario:
                 customer_destination_y,
             )
             total_distance += pickup_distance + travel_distance
-            # Waiting and active times.
+            # Waiting times.
             waiting_time = pickup_distance / ASSUMED_SPEED
-            travel_time = travel_distance / ASSUMED_SPEED
-            total_active_time += waiting_time + travel_time
             total_waiting_time += waiting_time
-        return total_distance, total_active_time, total_waiting_time
+        return total_distance, total_waiting_time
 
     @classmethod
     def _euclidean_distance(cls, x1, y1, x2, y2) -> float:

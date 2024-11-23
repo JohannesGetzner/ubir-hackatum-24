@@ -7,7 +7,7 @@ under the MIT license.
 from deap import algorithms, tools
 
 
-def eaSimpleWithElitism(
+def ea_simple_with_elitism(
     population,
     toolbox,
     cxpb,
@@ -22,7 +22,6 @@ def eaSimpleWithElitism(
     halloffame are directly injected into the next generation and are not subject to the
     genetic operators of selection, crossover and mutation.
     """
-    print(population)
     logbook = tools.Logbook()
     logbook.header = ["gen", "nevals"] + (stats.fields if stats else [])
 

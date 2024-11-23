@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from deap import base, creator, tools
 
-from .utils import eaSimpleWithElitism
+from .utils import ea_simple_with_elitism
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from models import Scenario
@@ -16,7 +16,7 @@ from models import Scenario
 POPULATION_SIZE = 500
 P_CROSSOVER = 0.9
 P_MUTATION = 0.1
-MAX_GENERATIONS = 300
+MAX_GENERATIONS = 500
 HALL_OF_FAME_SIZE = 30
 
 # Define random seed.
@@ -69,8 +69,7 @@ def solve(
     vehicles: list[dict],
     customers: list[dict],
     weight_distance: float = 1.0,
-    weight_active_time: float= 0.1,
-    weight_waiting_time: float = 0.5,
+    weight_waiting_time: float = 1.0,
     population_size=POPULATION_SIZE,
     p_crossover=P_CROSSOVER,
     p_mutation=P_MUTATION,
@@ -84,7 +83,7 @@ def solve(
     creator.create(
         "FitnessMulti",
         base.Fitness,
-        weights=(-weight_distance, weight_active_time, -weight_waiting_time),
+        weights=(-weight_distance, -weight_waiting_time),
     )
     # Define the individual type.
     creator.create("Individual", list, fitness=creator.FitnessMulti)
@@ -119,7 +118,7 @@ def solve(
 
     # Run the evolutionary algorithm
     hof = tools.HallOfFame(hall_of_fame_size)
-    population, logbook = eaSimpleWithElitism(
+    population, logbook = ea_simple_with_elitism(
         toolbox.population(n=population_size),
         toolbox,
         cxpb=p_crossover,
@@ -147,22 +146,14 @@ def solve(
     min_distance_vals = min_fitness_vals[:, 0]
     max_distance_vals = max_fitness_vals[:, 0]
 
-    mean_active_vals = mean_fitness_vals[:, 1]
-    min_active_vals = min_fitness_vals[:, 1]
-    max_active_vals = max_fitness_vals[:, 1]
-
-    mean_waiting_vals = mean_fitness_vals[:, 2]
-    min_waiting_vals = min_fitness_vals[:, 2]
-    max_waiting_vals = max_fitness_vals[:, 2]
+    mean_waiting_vals = mean_fitness_vals[:, 1]
+    min_waiting_vals = min_fitness_vals[:, 1]
+    max_waiting_vals = max_fitness_vals[:, 1]
 
     # Plot the max and mean values.
     plt.plot(mean_distance_vals, color="blue", label="Mean Distance")
     plt.plot(min_distance_vals, color="green", label="Min. Distance")
     plt.plot(max_distance_vals, color="red", label="Max. Distance")
-
-    plt.plot(mean_active_vals, color="blue", label="Mean Active Time")
-    plt.plot(min_active_vals, color="green", label="Min. Active Time")
-    plt.plot(max_active_vals, color="red", label="Max. Active Time")
 
     plt.plot(mean_waiting_vals, color="blue", label="Mean Waiting Time")
     plt.plot(min_waiting_vals, color="green", label="Min. Waiting Time")
