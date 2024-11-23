@@ -1,4 +1,5 @@
 flask==2.3.3
 python-dotenv==1.0.0
-Flask-SQLAlchemy==3.1.1
+sqlalchemy>=2.0.0
+alembic  # for database migrations
 requests>=2.31.0

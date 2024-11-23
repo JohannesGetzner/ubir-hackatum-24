@@ -35,7 +35,7 @@ class Scenario:
     customers: Optional[List[Customer]] = None
 
 class ScenarioRunnerClient:
-    def __init__(self, base_url: str = "http://scenariorunner:8090"):
+    def __init__(self, base_url: str = "http://localhost:8090"):
         self.base_url = base_url.rstrip('/')
 
     def launch_scenario(self, scenario_id: str, speed: float = 0.2) -> bool:
@@ -84,17 +84,17 @@ class ScenarioRunnerClient:
         params = {}
         if db_scenario_id:
             params["db_scenario_id"] = db_scenario_id
-            
-        response = requests.post(
-            url,
-            json={
+        request_body = {
                 "id": scenario.id,
                 "startTime": scenario.startTime,
                 "endTime": scenario.endTime,
                 "status": scenario.status,
                 "vehicles": [vars(v) for v in scenario.vehicles] if scenario.vehicles else None,
                 "customers": [vars(c) for c in scenario.customers] if scenario.customers else None
-            },
+            }
+        response = requests.post(
+            url,
+            json=request_body,
             params=params
         )
         response.raise_for_status()
