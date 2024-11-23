@@ -20,5 +20,4 @@ def solve(
     random.shuffle(customers_idx)
     for customer in customers_idx:
         solution.append((random.choice(vehicles_idx), customer))
-    print(solution)
-    print("Solution cost:", scenario.calculate_cost(solution))
+    return scenario.solution_to_real_ids(solution), scenario.calculate_cost(solution)

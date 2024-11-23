@@ -3,17 +3,17 @@
 import json
 import sys
 from pathlib import Path
+from pprint import pprint
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from random_ import solution as random_sol
+from solver import solve
 
-SCENARIO_NUMBER: int = 3
+SCENARIO_NUMBER: int = 2
 
 if __name__ == "__main__":
     with open(
         Path(f"{Path(__file__).parent}/data/scenario_{SCENARIO_NUMBER:>02}.json"), "r"
     ) as f:
         loaded_scenario = json.load(f)
-    random_sol.solve(loaded_scenario["vehicles"], loaded_scenario["customers"])
-    print("Number of vehicles:", len(loaded_scenario["vehicles"]))
-    print("Number of customers:", len(loaded_scenario["customers"]))
+    solution = solve(loaded_scenario["vehicles"], loaded_scenario["customers"])
+    pprint(solution, indent=4)

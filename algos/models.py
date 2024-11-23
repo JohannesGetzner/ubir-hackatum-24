@@ -8,7 +8,7 @@ class Scenario:
     def __init__(self, vehicles: dict, customers: dict):
         self.vehicles = vehicles
         self.customers = customers
-        # Mapping from vehicles ids to ints.
+        # Mapping from vehicles int ids to vehicles.
         self.indexed_vehicles = dict(enumerate(vehicles, start=1))
         self.indexed_customers = dict(enumerate(customers, start=1))
 
@@ -64,3 +64,16 @@ class Scenario:
         )
         c = 2 * math.asin(math.sqrt(a))
         return c * R
+
+    def solution_to_real_ids(
+        self, solution: list[tuple[int, int]]
+    ) -> list[tuple[str, str]]:
+        real_ids_sol = []
+        for vehicle, customer in solution:
+            real_ids_sol.append(
+                (
+                    self.indexed_vehicles[vehicle]["id"],
+                    self.indexed_customers[customer]["id"],
+                )
+            )
+        return real_ids_sol

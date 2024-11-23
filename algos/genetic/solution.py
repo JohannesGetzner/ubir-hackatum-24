@@ -129,11 +129,12 @@ def solve(
         verbose=True,
     )
 
-    # Print the best ever individual.
+    # Take the best individual as solution.
+    solution = hof.items[0]
     print("Best Individual")
     print("===============")
-    print(hof.items[0])
-    print("\nWith fitness values of:", hof.items[0].fitness)
+    print(solution)
+    print("\nWith fitness values of:", solution.fitness)
     print()
 
     # Return the min and mean values.
@@ -166,4 +167,6 @@ def solve(
     plt.xlabel("Generation")
     plt.ylabel("Optimization Targets")
     plt.title("Optimization Targets over Generations")
-    plt.show()
+    # plt.show()
+
+    return scenario.solution_to_real_ids(solution), solution.fitness.values
