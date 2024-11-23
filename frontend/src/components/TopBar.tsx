@@ -5,6 +5,7 @@ import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import PercentIcon from '@mui/icons-material/Percent';
 import { useScenario } from '../context/ScenarioContext';
 import OptimizationModeSwitch from './OptimizationModeSwitch';
+import logo from '../assets/logo.png';
 
 interface TopBarProps {
   spacing?: number;
@@ -43,22 +44,14 @@ const TopBar: React.FC<TopBarProps> = ({ spacing = 2 }) => {
     >
       <Toolbar sx={{ height: '72px', display: 'flex', alignItems: 'center', py: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-          <Typography 
-            variant="h6" 
-            noWrap 
-            component="div"
-            sx={{ 
-              color: theme.palette.primary.main,
-              fontWeight: 600,
-              letterSpacing: '0.5px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1
+          <img 
+            src={logo} 
+            alt="Logo" 
+            style={{ 
+              height: '40px',
+              marginRight: theme.spacing(2)
             }}
-          >
-            <DirectionsCarIcon sx={{ fontSize: 28 }} />
-            UbiR
-          </Typography>
+          />
         </Box>
 
         <Box sx={{ 

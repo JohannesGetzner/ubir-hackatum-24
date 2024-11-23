@@ -38,8 +38,8 @@ def hello():
 @app.route('/create_and_initialize_scenario', methods=['POST'])
 def create_and_initialize_scenario():
     # Generate random numbers for vehicles and customers
-    num_vehicles = random.randint(1, 3)
-    num_customers = random.randint(20, 50)
+    num_vehicles = random.randint(15, 30)
+    num_customers = random.randint(55, 60)
     
     scenario = engine.create_scenario(
         num_vehicles=num_vehicles,

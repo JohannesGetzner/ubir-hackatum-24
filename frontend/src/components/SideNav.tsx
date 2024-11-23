@@ -25,7 +25,7 @@ const menuItems = [
   { text: 'Map', icon: <MapIcon />, path: '/map' },
   { text: 'Fleet', icon: <DirectionsCarIcon />, path: '/fleet' },
   { text: 'Customers', icon: <PeopleIcon />, path: '/customers' },
-  { text: 'Predictions', icon: <TimelineIcon />, path: '/predictions' },
+  { text: 'Simulation', icon: <TimelineIcon />, path: '/simulation' },
 ];
 
 const SideNav: React.FC<SideNavProps> = ({ spacing = 2 }) => {

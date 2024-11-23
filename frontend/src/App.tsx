@@ -8,7 +8,7 @@ import Overview from './pages/Overview';
 import Map from './pages/Map';
 import Fleet from './pages/Fleet';
 import Customers from './pages/Customers';
-import Predictions from './pages/Predictions';
+import Simulation from './pages/Simulation';
 import { ScenarioProvider } from './context/ScenarioContext';
 import { OptimizationModeProvider } from './context/OptimizationModeContext';
 
@@ -54,7 +54,7 @@ const AppContent = () => {
             <Route path="/map" element={<Map />} />
             <Route path="/fleet" element={<Fleet />} />
             <Route path="/customers" element={<Customers />} />
-            <Route path="/predictions" element={<Predictions />} />
+            <Route path="/simulation" element={<Simulation />} />
           </Routes>
         </Box>
       </Box>

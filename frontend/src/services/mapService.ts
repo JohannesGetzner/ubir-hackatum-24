@@ -1,6 +1,7 @@
 export interface Vehicle {
     id: string;
     scenario_id: string;
+    vehicle_name: string;
     longitude: number;
     latitude: number;
     is_available: boolean;
@@ -15,15 +16,14 @@ export interface Vehicle {
 
 export interface Customer {
     id: string;
+    fake_name: string;
     scenario_id: string;
     longitude: number;
     latitude: number;
     destination_longitude: number;
     destination_latitude: number;
     awaiting_service: boolean;
-    waiting_time: number;
-    priority_score: number;
-    assigned_vehicle_id: string | null;
+    picked_up: boolean;
 }
 
 export interface MapState {

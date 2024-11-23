@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Grid, Card, Container, styled, Typography, Box, keyframes } from '@mui/material';
 import { Vehicle, MapState, mapService } from '../services/mapService';
-import carImage from '../assets/car_a.png';
+
+// Import all vehicle images with exact filenames as they are in the assets directory
+const vehicleImages = {
+  'Tesla Model 3': require('../assets/Tesla_Model_3.png'),
+  'Tesla Model S': require('../assets/Tesla_Model_S.png'),
+  'Tesla Model Y': require('../assets/Tesla_Model_Y.png'),
+  'Nissan Leaf': require('../assets/Nissan_Leaf.png'),
+  'Ford Mustang Mach-E': require('../assets/Ford_Mustang_Mach-E.png'),
+  'Audi e-tron': require('../assets/Audi_E-Tron.png'),
+  'Jaguar I-PACE': require('../assets/Jaguar-I-PACE.png'),
+  'Porsche Taycan': require('../assets/Porsche-Taycan.png'),
+};
 
 const StyledContainer = styled(Container)(({ theme }) => ({
   backgroundColor: 'white',
@@ -94,6 +105,26 @@ const Fleet = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const getVehicleImage = (vehicleName: string) => {
+    try {
+      // First try the predefined mapping
+      const image = vehicleImages[vehicleName as keyof typeof vehicleImages];
+      if (image) return image;
+
+      // If not in mapping, try to load dynamically
+      const fileName = vehicleName
+        .replace(/\s+/g, '_')  // Replace spaces with underscores
+        .replace('e-tron', 'E-Tron')  // Handle special cases
+        .replace('I-PACE', '-I-PACE')
+        .replace('Taycan', '-Taycan');
+      
+      return require(`../assets/${fileName}.png`);
+    } catch (error) {
+      console.warn(`Could not load image for vehicle ${vehicleName}`, error);
+      return require('../assets/Tesla_Model_3.png'); // Use Tesla Model 3 as fallback
+    }
+  };
+
   return (
     <StyledContainer maxWidth={false}>
       {errorCount > 0 && (
@@ -115,17 +146,24 @@ const Fleet = () => {
       )}
       <Grid container spacing={2}>
         {vehicles.map((vehicle) => (
-          <Grid item xs={12} sm={6} md={3} key={vehicle.id}>
+          <Grid item xs={12} sm={6} md={3} key={vehicle.vehicle_name}>
             <StyledCard>
               <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-                <CarImage src={carImage} alt="Vehicle" />
-                <Typography variant="h6" sx={{ position: 'absolute', left: '100px', top: '16px' }}>
-                  #{vehicle.id}
+                <CarImage 
+                  src={getVehicleImage(vehicle.vehicle_name)} 
+                  alt={vehicle.vehicle_name}
+                  onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                    const img = e.target as HTMLImageElement;
+                    img.src = require('../assets/Tesla_Model_3.png');
+                  }}
+                />
+                <Typography variant="h6" sx={{ position: 'absolute', left: '100px', top: '16px', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {vehicle.vehicle_name}
                 </Typography>
               </Box>
               
               <Typography variant="body1" sx={{ mt: 2 }}>
-                Model: Tesla Model S
+                ID: #{vehicle.id.slice(0, 8)}
               </Typography>
 
               <Box sx={{ mt: 'auto' }}>

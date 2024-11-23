@@ -1,3 +1,4 @@
+import random
 from typing import Optional, List
 from uuid import UUID
 from enum import Enum
@@ -11,12 +12,16 @@ class VehicleRouteStatus(str, Enum):
     TO_CUSTOMER = "cust"
     TO_DESTINATION = "dest"
 
+def get_random_car():
+    car_names = ["Tesla Model 3", "Tesla Model S", "Tesla Model Y", "Nissan Leaf", "Ford Mustang Mach-E", "Audi e-tron", "Jaguar I-PACE", "Porsche Taycan"]
+    return random.choice(car_names)
+
 class Vehicle(Base):
     __tablename__ = "vehicles"
 
     scenario_id: Mapped[UUID] = mapped_column(String, ForeignKey("scenarios.scenario_id"), primary_key=True)
     vehicle_id: Mapped[UUID] = mapped_column(String, primary_key=True)
-    vehicle_name: Mapped[str] = mapped_column(String, nullable=True, default="Texla X")
+    vehicle_name: Mapped[str] = mapped_column(String, nullable=True, default=get_random_car())
     active_time: Mapped[float] = mapped_column(Float, default=0.0)
     coord_x: Mapped[float] = mapped_column(Float, default=0.0)
     coord_y: Mapped[float] = mapped_column(Float, default=0.0)
@@ -62,6 +67,7 @@ class Vehicle(Base):
         return {
             'id': str(self.vehicle_id),
             'scenario_id': str(self.scenario_id),
+            'vehicle_name': str(get_random_car()),
             'latitude': self.current_coord_x,
             'longitude': self.current_coord_y,
             'is_available': self.is_available,
