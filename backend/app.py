@@ -51,5 +51,29 @@ def create_and_initialize_scenario():
             'message': str(e)
         }), 500
 
+@app.route('/launch_scenario/<scenario_id>/<float:speed>', methods=['POST'])
+def launch_scenario(scenario_id, speed):
+    try:
+        # Validate speed parameter
+        if speed <= 0 or speed > 1:
+            return jsonify({
+                'status': 'error',
+                'message': 'Speed must be between 0 and 1 (exclusive of 0)'
+            }), 400
+
+        # Launch the scenario using the engine
+        engine.launch_scenario(scenario_id, speed)
+        
+        return jsonify({
+            'status': 'success',
+            'scenario_id': scenario_id,
+            'speed': speed
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=3333)

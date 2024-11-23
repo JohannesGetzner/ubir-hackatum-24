@@ -111,5 +111,18 @@ class ScenarioEngine:
         except:
             logger.error(f"Failed to initialize scenario {scenario.id}")
             return False
+
+
+    def launch_scenario(self, scenario_id:str, speed:float):
+        # Step 3: Launch scenario
+        logger.info(f"Launching scenario {scenario_id}")
+        try:
+            success = self.runner.launch_scenario(scenario_id=scenario_id,speed=speed)
+            self.scenario_repo.update(Scenario(scenario_id=scenario_id, status=ScenarioStatus.RUNNING))
+            logger.info(f"Successfully launched scenario")
+            return True
+        except:
+            logger.error(f"Failed to launch scenario with id {scenario_id}")
+            return False
             
        
