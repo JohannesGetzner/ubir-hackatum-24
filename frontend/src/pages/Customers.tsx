@@ -52,8 +52,9 @@ const StyledCard = styled(Card)(({ theme }) => ({
 
 const CustomerImage = styled('img')({
   width: '80px',
-  height: 'auto',
-  objectFit: 'contain',
+  height: '80px',
+  objectFit: 'cover',
+  borderRadius: '50%',
 });
 
 const StatusDot = styled('div')<{ status: boolean }>(({ status, theme }) => ({
