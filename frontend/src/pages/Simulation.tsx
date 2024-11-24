@@ -240,11 +240,15 @@ const Simulation = () => {
     const fetchScenarios = async () => {
       try {
         const data = await getAllScenarios();
-        setScenarios(data);
+        // Sort scenarios by start_time in descending order (newest first)
+        const sortedData = [...data].sort((a, b) => 
+          new Date(b.start_time || 0).getTime() - new Date(a.start_time || 0).getTime()
+        );
+        setScenarios(sortedData);
         
         // Update KPIs based on the most recent scenario
-        if (data.length > 0) {
-          const latestScenario = data[0]; // First scenario is the most recent
+        if (sortedData.length > 0) {
+          const latestScenario = sortedData[0]; // First scenario is the most recent
           setKmChange(latestScenario.savings_km_genetic || null);
           setWaitingTimeChange(latestScenario.savings_time_genetic || null);
         }
@@ -262,11 +266,15 @@ const Simulation = () => {
     const interval = setInterval(async () => {
       try {
         const data = await getAllScenarios();
-        setScenarios(data);
+        // Sort scenarios by start_time in descending order (newest first)
+        const sortedData = [...data].sort((a, b) => 
+          new Date(b.start_time || 0).getTime() - new Date(a.start_time || 0).getTime()
+        );
+        setScenarios(sortedData);
         
         // Update KPIs based on the most recent scenario
-        if (data.length > 0) {
-          const latestScenario = data[0]; // First scenario is the most recent
+        if (sortedData.length > 0) {
+          const latestScenario = sortedData[0]; // First scenario is the most recent
           setKmChange(latestScenario.savings_km_genetic || null);
           setWaitingTimeChange(latestScenario.savings_time_genetic || null);
         }

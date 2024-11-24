@@ -7,7 +7,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "3333:3333"
     environment:
       - FLASK_APP=run.py
       - FLASK_ENV=development
@@ -16,27 +16,7 @@ services:
       - sqlite_data:/app/instance
     networks:
       - app-network
-
-  app-frontend:
-    container_name: app-frontend
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3333:3333"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    environment:
-      - REACT_APP_API_URL=http://localhost:5000
-      - WATCHPACK_POLLING=true
-      - CHOKIDAR_USEPOLLING=true
-    depends_on:
-      - app-backend
-    networks:
-      - app-network
-    stdin_open: true
-    tty: true
+      - simulation
 
   app-solver:
     container_name: app-solver
@@ -44,47 +24,40 @@ services:
       context: ./solver
       dockerfile: Dockerfile
     ports:
-      - "5001:5000"
+      - "5000:5000"
     volumes:
       - ./solver:/app
     environment:
       - PYTHONUNBUFFERED=1
-    depends_on:
-      - app-backend
     networks:
       - app-network
 
   app-grafana:
     container_name: app-grafana
     image: grafana/grafana:latest
+    user: root
     ports:
       - "3001:3000"
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./backend/instance/hackathon.db:/var/lib/grafana/hackathon.db
+      - sqlite_data:/var/lib/grafana/hackathon:ro
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=hackatum
-      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ALLOW_EMBEDDING=true
-      - GF_SECURITY_COOKIE_SAMESITE=none
-      - GF_SECURITY_COOKIE_SECURE=true
-      - GF_SECURITY_X_FRAME_OPTIONS=
-      - GF_SERVER_PROTOCOL=http
-      - GF_DATABASE_TYPE=sqlite3
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 512M
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_PANELS_DISABLE_SANITIZE_HTML=true
     networks:
       - app-network
 
 networks:
   app-network:
     driver: bridge
+  simulation:
+    name: hackatum24_default
+    external: true
 
 volumes:
-  sqlite_data:
   grafana_data:
+  sqlite_data:
+    name: sqlite_data_clean

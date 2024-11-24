@@ -24,8 +24,8 @@ class ScenarioEngine:
     def __init__(
         self,
         db: Session,
-        generator_url: str = "http://localhost:8080",
-        runner_url: str = "http://localhost:8090"
+        generator_url: str = "http://backend:8080",
+        runner_url: str = "http://scenariorunner:8090"
     ):
         self.generator = ScenarioGeneratorClient(generator_url)
         self.runner = ScenarioRunnerClient(runner_url)

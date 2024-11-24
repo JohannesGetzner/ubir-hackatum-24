@@ -7,6 +7,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 3000
+# Create instance directory and set permissions
+RUN mkdir -p instance && \
+    chmod 777 instance
+
+EXPOSE 3333
 
 CMD ["python", "run.py"]

@@ -55,7 +55,7 @@ class ScenarioDTO:
     customers: List[CustomerDTO]
 
 class ScenarioGeneratorClient:
-    def __init__(self, base_url: str = "http://localhost:8080"):
+    def __init__(self, base_url: str = "http://backend:8080"):
         self.base_url = base_url.rstrip('/')
 
     def create_scenario(self, num_vehicles: Optional[int] = None, num_customers: Optional[int] = None) -> ScenarioDTO:

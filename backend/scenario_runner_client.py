@@ -36,7 +36,7 @@ class Scenario:
     customers: Optional[List[Customer]] = None
 
 class ScenarioRunnerClient:
-    def __init__(self, base_url: str = "http://localhost:8090"):
+    def __init__(self, base_url: str = "http://scenariorunner:8090"):
         self.base_url = base_url.rstrip('/')
 
     def launch_scenario(self, scenario_id: str, speed: float = 0.2) -> dict:

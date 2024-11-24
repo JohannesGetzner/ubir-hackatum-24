@@ -89,16 +89,20 @@ const Overview = () => {
         <TopRow>
           <StyledPaper elevation={2}>
             <iframe
-              src={`http://localhost:3001/d-solo/ee4u8ra3t75dsa/hackatum?orgId=1&from=1732383116610&to=1732393916610&timezone=browser&var-scenario_id=${scenarioId}&theme=light&panelId=4&__feature.dashboardSceneSolo`}
-              style={{ width: '100%', height: '100%', display: 'block' }}
-              frameBorder="0"
+              src={`http://localhost:3001/d-solo/ee4u8ra3t75dsa/hackatum?orgId=1&from=1732383116610&to=1732393916610&timezone=browser&var-scenario_id=${scenarioId}&theme=light&panelId=4&kiosk`}
+              style={{ width: '100%', height: '100%', border: 'none' }}
+              title="Grafana Dashboard 1"
+              allow="fullscreen"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
             />
           </StyledPaper>
           <StyledPaper elevation={2} sx={{ overflow: 'hidden', padding: 0 }}>
             <iframe
-              src={`http://localhost:3001/d-solo/ee4u8ra3t75dsa/hackatum?orgId=1&from=1732370007655&to=1732391607655&timezone=browser&var-scenario_id=${scenarioId}&theme=light&panelId=2&__feature.dashboardSceneSolo`}
-              style={{ width: '100%', height: '100%', display: 'block' }}
-              frameBorder="0"
+              src={`http://localhost:3001/d-solo/ee4u8ra3t75dsa/hackatum?orgId=1&from=1732370007655&to=1732391607655&timezone=browser&var-scenario_id=${scenarioId}&theme=light&panelId=2&kiosk`}
+              style={{ width: '100%', height: '100%', border: 'none' }}
+              title="Grafana Dashboard 2"
+              allow="fullscreen"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
             />
           </StyledPaper>
         </TopRow>
@@ -125,9 +129,11 @@ const Overview = () => {
           </StyledPaper>
           <StyledPaper elevation={2} sx={{ overflow: 'hidden', padding: 0 }}>
             <iframe
-              src={`http://localhost:3001/d-solo/ee4u8ra3t75dsa/hackatum?orgId=1&from=1732370007655&to=1732391607655&timezone=browser&var-scenario_id=${scenarioId}&theme=light&panelId=3&__feature.dashboardSceneSolo`}
-              style={{ width: '100%', height: '100%', display: 'block' }}
-              frameBorder="0"
+              src={`http://localhost:3001/d-solo/ee4u8ra3t75dsa/hackatum?orgId=1&from=1732370007655&to=1732391607655&timezone=browser&var-scenario_id=${scenarioId}&theme=light&panelId=3&kiosk`}
+              style={{ width: '100%', height: '100%', border: 'none' }}
+              title="Grafana Dashboard 3"
+              allow="fullscreen"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
             />
           </StyledPaper>
         </BottomRow>

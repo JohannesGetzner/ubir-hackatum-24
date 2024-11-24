@@ -57,7 +57,7 @@ def call_solver(scenario:Scenario):
         "vehicles": [asdict(v) for v in scenario.vehicles] if scenario.vehicles else None,
         "customers": [asdict(c) for c in scenario.customers] if scenario.customers else None
     }
-    response = requests.post('http://localhost:5001/solve', json=request_body)
+    response = requests.post('http://app-solver:5000/solve', json=request_body)
     return response.json()
 
 @app.route('/run_scenario/<int:num_customers>/<int:num_vehicles>/<float:speed>', methods=['POST'])
