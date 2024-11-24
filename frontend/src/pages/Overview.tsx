@@ -89,7 +89,7 @@ const Overview = () => {
         <TopRow>
           <StyledPaper elevation={2}>
             <iframe
-              src={`http://localhost:3001/d-solo/ee4u8ra3t75dsa/hackatum?orgId=1&from=1732383116610&to=1732393916610&timezone=browser&var-scenario_id=${scenarioId}&theme=light&panelId=4&kiosk`}
+              src={`http://localhost:3001/d-solo/de4vgrih5uupsa/hackatum?orgId=1&from=1732417848837&to=1732419050299&timezone=browser&var-scenario_id=${scenarioId}&showCategory=Panel%20options&theme=light&panelId=3&__feature.dashboardSceneSolo`}
               style={{ width: '100%', height: '100%', border: 'none' }}
               title="Grafana Dashboard 1"
               allow="fullscreen"
@@ -98,7 +98,7 @@ const Overview = () => {
           </StyledPaper>
           <StyledPaper elevation={2} sx={{ overflow: 'hidden', padding: 0 }}>
             <iframe
-              src={`http://localhost:3001/d-solo/ee4u8ra3t75dsa/hackatum?orgId=1&from=1732370007655&to=1732391607655&timezone=browser&var-scenario_id=${scenarioId}&theme=light&panelId=2&kiosk`}
+              src={`http://localhost:3001/d-solo/de4vgrih5uupsa/hackatum?orgId=1&from=1732396896678&to=1732418496678&timezone=browser&var-scenario_id=${scenarioId}&theme=light&panelId=1&__feature.dashboardSceneSolo`}
               style={{ width: '100%', height: '100%', border: 'none' }}
               title="Grafana Dashboard 2"
               allow="fullscreen"
@@ -124,12 +124,18 @@ const Overview = () => {
               <Map />
             </Box>
           </StyledPaper>
-          <StyledPaper elevation={2}>
-            Section 2
+          <StyledPaper elevation={2} sx={{ overflow: 'hidden', padding: 0 }}>
+            <iframe
+              src={`http://localhost:3001/d-solo/de4vgrih5uupsa/hackatum?orgId=1&from=1732397903489&to=1732419503490&timezone=browser&var-scenario_id=${scenarioId}&theme=light&panelId=4&__feature.dashboardSceneSolo`}
+              style={{ width: '100%', height: '100%', border: 'none' }}
+              title="Grafana Dashboard 4"
+              allow="fullscreen"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+            />
           </StyledPaper>
           <StyledPaper elevation={2} sx={{ overflow: 'hidden', padding: 0 }}>
             <iframe
-              src={`http://localhost:3001/d-solo/ee4u8ra3t75dsa/hackatum?orgId=1&from=1732370007655&to=1732391607655&timezone=browser&var-scenario_id=${scenarioId}&theme=light&panelId=3&kiosk`}
+              src={`http://localhost:3001/d-solo/de4vgrih5uupsa/hackatum?orgId=1&from=1732396896678&to=1732418496678&timezone=browser&var-scenario_id=${scenarioId}&showCategory=Panel%20options&theme=light&panelId=2&__feature.dashboardSceneSolo`}
               style={{ width: '100%', height: '100%', border: 'none' }}
               title="Grafana Dashboard 3"
               allow="fullscreen"
