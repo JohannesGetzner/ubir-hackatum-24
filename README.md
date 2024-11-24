@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="350" src="https://github.com/user-attachments/assets/d7bc119d-43d8-4c48-8f03-f163e8492516" alt="UbiR: Ubiquitous Robotaxis">
+  <img width="430" src="https://github.com/user-attachments/assets/411e75f3-b215-4512-be3d-33b15f50805d" alt="UbiR: Ubiquitous Robotaxis">
 </p>
 <h1 align="center">
   Fleet Management System
