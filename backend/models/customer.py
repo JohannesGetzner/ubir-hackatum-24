@@ -39,10 +39,11 @@ class Customer(Base):
             'fake_name': str(get_random_name()),
             'latitude': self.coord_x,
             'longitude': self.coord_y,
-            'destination_longitude': self.destination_x,
-            'destination_latitude': self.destination_y,
+            'destination_latitude': self.destination_x,
+            'destination_longitude': self.destination_y,
             'awaiting_service': self.awaiting_service,
             'picked_up': self.picked_up,
+            'dropped_off': not self.awaiting_service and self.picked_up,
             'waiting_time': self.waiting_time,
             'priority_score': self.priority_score,
             'assigned_vehicle_id': str(self.assigned_vehicle.vehicle_id) if self.assigned_vehicle else None

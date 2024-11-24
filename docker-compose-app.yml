@@ -38,6 +38,22 @@ services:
     stdin_open: true
     tty: true
 
+  app-solver:
+    container_name: app-solver
+    build:
+      context: ./solver
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./solver:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - app-backend
+    networks:
+      - app-network
+
   app-grafana:
     container_name: app-grafana
     image: grafana/grafana:latest

@@ -24,6 +24,7 @@ export interface Customer {
     destination_latitude: number;
     awaiting_service: boolean;
     picked_up: boolean;
+    dropped_off: boolean;
 }
 
 export interface MapState {
@@ -42,11 +43,12 @@ let lastKnownGoodState: MapState | null = null;
 export const mapService = {
     /**
      * Fetches the current map state including all vehicles and customers
+     * @param scenarioId The ID of the scenario to fetch state for
      * @returns Promise<MapState> The current state of vehicles and customers, or last known good state if request fails
      */
-    async getMapState(): Promise<MapState> {
+    async getMapState(scenarioId: string): Promise<MapState> {
         try {
-            const response = await fetch(`${API_URL}/map_state/`, {
+            const response = await fetch(`${API_URL}/map_state/?scenario_id=${scenarioId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

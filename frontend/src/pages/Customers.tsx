@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Grid, Card, Container, styled, Typography, Box } from '@mui/material';
 import { keyframes } from '@mui/material/styles';
 import { Customer, MapState, mapService } from '../services/mapService';
+import { useScenario } from '../context/ScenarioContext';
+import NoScenarioOverlay from '../components/NoScenarioOverlay';
 
 // Import default customer images
 const defaultCustomerImages = {
@@ -68,20 +70,20 @@ const StatusDot = styled('div')<{ status: boolean }>(({ status, theme }) => ({
 const Customers = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [errorCount, setErrorCount] = useState(0);
+  const { scenarioId } = useScenario();
 
   useEffect(() => {
+    if (!scenarioId) return;
+
     const fetchCustomers = async () => {
       try {
-        const state = await mapService.getMapState();
+        const state = await mapService.getMapState(scenarioId);
         if (state.status === 'error') {
           setErrorCount(prev => prev + 1);
           console.warn('Customer state update failed:', state.message);
         } else {
           setErrorCount(0);
-          if (state.customers.length > 0) {
-            console.log('Received customers:', state.customers);
-            setCustomers(state.customers);
-          }
+          setCustomers(state.customers);
         }
       } catch (error) {
         console.error('Failed to fetch customers:', error);
@@ -90,9 +92,9 @@ const Customers = () => {
     };
 
     fetchCustomers();
-    const interval = setInterval(fetchCustomers, 5000);
+    const interval = setInterval(fetchCustomers, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [scenarioId]);
 
   const getCustomerImage = (fakeName: string) => {
     try {
@@ -109,7 +111,8 @@ const Customers = () => {
   };
 
   return (
-    <StyledContainer maxWidth={false}>
+    <Container maxWidth="xl" sx={{ position: 'relative' }}>
+      {!scenarioId && <NoScenarioOverlay />}
       {errorCount > 0 && (
         <Box
           sx={{
@@ -168,7 +171,7 @@ const Customers = () => {
           </Grid>
         )}
       </Grid>
-    </StyledContainer>
+    </Container>
   );
 };
 

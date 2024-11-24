@@ -3,3 +3,5 @@ python-dotenv==1.0.0
 sqlalchemy>=2.0.0
 alembic  # for database migrations
 requests>=2.31.0
+flask_sqlalchemy
+flask_cors

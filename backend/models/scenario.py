@@ -17,9 +17,6 @@ class Scenario(Base):
         default=ScenarioStatus.RUNNING,
         nullable=False
     )
-    efficiency_setting: Mapped[float] = mapped_column(Float, default=1.0)
-    sustainability_setting: Mapped[float] = mapped_column(Float, default=1.0)
-    satisfaction_setting: Mapped[float] = mapped_column(Float, default=1.0)
     num_customers: Mapped[float] = mapped_column(Integer, nullable=False)
     num_vehicles: Mapped[float] = mapped_column(Integer, nullable=False)
 
@@ -27,3 +24,21 @@ class Scenario(Base):
     customers: Mapped[List["Customer"]] = relationship("Customer", back_populates="scenario", cascade="all, delete-orphan")
     vehicles: Mapped[List["Vehicle"]] = relationship("Vehicle", back_populates="scenario", cascade="all, delete-orphan")
     assignments: Mapped[List["Assignment"]] = relationship("Assignment", back_populates="scenario", cascade="all, delete-orphan")
+    savings_km_genetic: Mapped[float] = mapped_column(Float, default=0.0)
+    savings_km_greedy: Mapped[float] = mapped_column(Float, default=0.0)
+    savings_time_genetic: Mapped[float] = mapped_column(Float, default=0.0)
+    savings_time_greedy: Mapped[float] = mapped_column(Float, default=0.0)
+
+    def to_dict(self):
+        return {
+            "scenario_id": str(self.scenario_id),
+            "start_time": self.start_time,
+            "end_time": self.end_time,
+            "status": self.status,
+            "num_customers": self.num_customers,
+            "num_vehicles": self.num_vehicles,
+            "savings_km_genetic": self.savings_km_genetic,
+            "savings_km_greedy": self.savings_km_greedy,
+            "savings_time_genetic": self.savings_time_genetic,
+            "savings_time_greedy": self.savings_time_greedy,
+        }

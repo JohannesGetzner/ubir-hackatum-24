@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Grid, Paper, TextField, Button, Box, Container, CircularProgress, Typography, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, TableSortLabel } from '@mui/material';
 import { styled, keyframes, alpha } from '@mui/material/styles';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -6,6 +6,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import sceneImage from '../assets/scene.png';
+import { useScenario } from '../context/ScenarioContext';
+import { ScenarioResponse, runScenario, getAllScenarios } from '../services/scenarioService';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -140,13 +142,39 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
 
 interface KPIProps {
   label: string;
-  value: number;
+  value: number | null;
 }
 
 const KPIDisplay = ({ label, value }: KPIProps) => {
-  const isPositive = value > 0;
-  const displayValue = `${(value * 100).toFixed(1)}%`;
-  const color = isPositive ? '#d32f2f' : '#2e7d32'; // Red for positive (worse), Green for negative (better)
+  if (value === null) {
+    return (
+      <Box sx={{ textAlign: 'center' }}>
+        <Typography variant="h6" color="text.secondary" gutterBottom>
+          {label}
+        </Typography>
+        <Typography 
+          variant="h3" 
+          sx={{ 
+            color: 'text.secondary',
+            fontWeight: 'bold',
+          }}
+        >
+          -
+        </Typography>
+        <Typography 
+          variant="subtitle1" 
+          sx={{ 
+            color: 'text.secondary',
+            mt: 1
+          }}
+        >
+          No data
+        </Typography>
+      </Box>
+    );
+  }
+
+  const displayValue = `-${(Math.abs(value) * 100).toFixed(1)}%`;
   
   return (
     <Box sx={{ textAlign: 'center' }}>
@@ -156,7 +184,7 @@ const KPIDisplay = ({ label, value }: KPIProps) => {
       <Typography 
         variant="h3" 
         sx={{ 
-          color,
+          color: 'success.main',
           fontWeight: 'bold',
         }}
       >
@@ -165,11 +193,11 @@ const KPIDisplay = ({ label, value }: KPIProps) => {
       <Typography 
         variant="subtitle1" 
         sx={{ 
-          color: isPositive ? 'error.main' : 'success.main',
+          color: 'success.main',
           mt: 1
         }}
       >
-        {isPositive ? 'Increase' : 'Reduction'}
+        Reduction
       </Typography>
     </Box>
   );
@@ -198,147 +226,86 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const mockResults: SimulationResult[] = [
-  {
-    id: 1,
-    fleetSize: 50,
-    customers: 200,
-    timeOfDay: '08:00',
-    breakdownRate: 0.05,
-    kmChange: -0.4,
-    waitingTimeChange: -0.15,
-  },
-  {
-    id: 2,
-    fleetSize: 40,
-    customers: 180,
-    timeOfDay: '12:00',
-    breakdownRate: 0.1,
-    kmChange: -0.35,
-    waitingTimeChange: -0.2,
-  },
-  {
-    id: 3,
-    fleetSize: 60,
-    customers: 250,
-    timeOfDay: '17:00',
-    breakdownRate: 0.08,
-    kmChange: -0.25,
-    waitingTimeChange: -0.1,
-  },
-  {
-    id: 4,
-    fleetSize: 45,
-    customers: 190,
-    timeOfDay: '14:30',
-    breakdownRate: 0.15,
-    kmChange: 0.1,
-    waitingTimeChange: 0.05,
-  },
-  {
-    id: 5,
-    fleetSize: 55,
-    customers: 220,
-    timeOfDay: '09:30',
-    breakdownRate: 0.07,
-    kmChange: -0.3,
-    waitingTimeChange: -0.18,
-  },
-  {
-    id: 6,
-    fleetSize: 48,
-    customers: 195,
-    timeOfDay: '13:15',
-    breakdownRate: 0.12,
-    kmChange: -0.22,
-    waitingTimeChange: -0.08,
-  },
-  {
-    id: 7,
-    fleetSize: 52,
-    customers: 210,
-    timeOfDay: '16:45',
-    breakdownRate: 0.06,
-    kmChange: -0.38,
-    waitingTimeChange: -0.25,
-  },
-  {
-    id: 8,
-    fleetSize: 42,
-    customers: 175,
-    timeOfDay: '11:20',
-    breakdownRate: 0.09,
-    kmChange: -0.15,
-    waitingTimeChange: -0.12,
-  },
-  {
-    id: 9,
-    fleetSize: 58,
-    customers: 240,
-    timeOfDay: '15:00',
-    breakdownRate: 0.11,
-    kmChange: 0.05,
-    waitingTimeChange: 0.08,
-  },
-  {
-    id: 10,
-    fleetSize: 44,
-    customers: 185,
-    timeOfDay: '10:45',
-    breakdownRate: 0.13,
-    kmChange: -0.28,
-    waitingTimeChange: -0.16,
-  },
-  {
-    id: 11,
-    fleetSize: 53,
-    customers: 215,
-    timeOfDay: '18:30',
-    breakdownRate: 0.04,
-    kmChange: -0.42,
-    waitingTimeChange: -0.22,
-  },
-  {
-    id: 12,
-    fleetSize: 46,
-    customers: 188,
-    timeOfDay: '07:15',
-    breakdownRate: 0.14,
-    kmChange: 0.08,
-    waitingTimeChange: 0.03,
-  }
-];
-
 const Simulation = () => {
+  const [scenarios, setScenarios] = useState<ScenarioResponse[]>([]);
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState(dayjs());
-  
-  // Mock KPI values (will be replaced with actual data)
-  const [kmChange, setKmChange] = useState(-0.4); // -40%
-  const [waitingTimeChange, setWaitingTimeChange] = useState(-0.15); // -15%
+  const [numVehicles, setNumVehicles] = useState(5);
+  const [numCustomers, setNumCustomers] = useState(10);
+  const { setScenarioId } = useScenario();
 
-  const handleSubmit = (event: React.FormEvent) => {
+  // Initial fetch of scenarios
+  useEffect(() => {
+    const fetchScenarios = async () => {
+      try {
+        const data = await getAllScenarios();
+        setScenarios(data);
+        
+        // Update KPIs based on the most recent scenario
+        if (data.length > 0) {
+          const latestScenario = data[0]; // First scenario is the most recent
+          setKmChange(latestScenario.savings_km_genetic || null);
+          setWaitingTimeChange(latestScenario.savings_time_genetic || null);
+        }
+      } catch (err) {
+        setError('Failed to fetch scenarios');
+        console.error('Error fetching scenarios:', err);
+      }
+    };
+
+    fetchScenarios();
+  }, []); // Empty dependency array means this runs once on mount
+
+  // Poll for updates every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const data = await getAllScenarios();
+        setScenarios(data);
+        
+        // Update KPIs based on the most recent scenario
+        if (data.length > 0) {
+          const latestScenario = data[0]; // First scenario is the most recent
+          setKmChange(latestScenario.savings_km_genetic || null);
+          setWaitingTimeChange(latestScenario.savings_time_genetic || null);
+        }
+      } catch (err) {
+        console.error('Error polling scenarios:', err);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const result = await runScenario(numCustomers, numVehicles, 0.1);
+      setScenarioId(result.scenario_id);
+      
+      // Immediately fetch updated scenarios after running
+      const updatedScenarios = await getAllScenarios();
+      setScenarios(updatedScenarios);
+    } catch (err) {
+      setError('Failed to run scenario');
+      console.error('Error running scenario:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClick = () => {
     if (loading) return;
-    
-    setLoading(true);
-    setProgress(0);
-
-    const timer = setInterval(() => {
-      setProgress((prevProgress) => {
-        if (prevProgress >= 100) {
-          clearInterval(timer);
-          setLoading(false);
-          return 100;
-        }
-        return prevProgress + 10;
-      });
-    }, 800);
+    handleSubmit({ preventDefault: () => {} } as React.FormEvent);
   };
+
+  // Initial KPI values set to null
+  const [kmChange, setKmChange] = useState<number | null>(null);
+  const [waitingTimeChange, setWaitingTimeChange] = useState<number | null>(null);
 
   return (
     <Container maxWidth="xl">
@@ -357,6 +324,8 @@ const Simulation = () => {
                       variant="outlined"
                       margin="normal"
                       type="number"
+                      value={numVehicles}
+                      onChange={(e) => setNumVehicles(parseInt(e.target.value) || 5)}
                       InputProps={{ inputProps: { min: 1 } }}
                     />
                   </Grid>
@@ -367,6 +336,8 @@ const Simulation = () => {
                       variant="outlined"
                       margin="normal"
                       type="number"
+                      value={numCustomers}
+                      onChange={(e) => setNumCustomers(parseInt(e.target.value) || 10)}
                       InputProps={{ inputProps: { min: 1 } }}
                     />
                   </Grid>
@@ -407,7 +378,7 @@ const Simulation = () => {
             <Box sx={{ position: 'relative', display: 'inline-flex' }}>
               <CircularProgress
                 variant="determinate"
-                value={progress}
+                value={0}
                 size={140}
                 thickness={4}
                 sx={{
@@ -456,7 +427,7 @@ const Simulation = () => {
                       textShadow: '0 0 10px rgba(255,255,255,0.8)',
                     }}
                   >
-                    {`${progress}%`}
+                    {`${0}%`}
                   </Typography>
                 ) : (
                   <Box
@@ -529,38 +500,42 @@ const Simulation = () => {
               <Table stickyHeader size="small" sx={{ minWidth: 650 }} aria-label="simulation results table">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Fleet Size</TableCell>
+                    <TableCell>Scenario ID</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Start Time</TableCell>
+                    <TableCell>End Time</TableCell>
                     <TableCell>Customers</TableCell>
-                    <TableCell>Time of Day</TableCell>
-                    <TableCell>Breakdown Rate</TableCell>
-                    <TableCell align="right">Distance Change</TableCell>
-                    <TableCell align="right">Waiting Time Change</TableCell>
+                    <TableCell>Vehicles</TableCell>
+                    <TableCell align="right">Distance Savings</TableCell>
+                    <TableCell align="right">Time Savings</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {mockResults.map((row) => (
-                    <StyledTableRow key={row.id}>
-                      <TableCell>{row.fleetSize}</TableCell>
-                      <TableCell>{row.customers}</TableCell>
-                      <TableCell>{row.timeOfDay}</TableCell>
-                      <TableCell>{(row.breakdownRate * 100).toFixed(1)}%</TableCell>
+                  {scenarios.map((scenario) => (
+                    <StyledTableRow key={scenario.scenario_id}>
+                      <TableCell>{scenario.scenario_id}</TableCell>
+                      <TableCell>{scenario.status}</TableCell>
+                      <TableCell>{scenario.start_time || '-'}</TableCell>
+                      <TableCell>{scenario.end_time || '-'}</TableCell>
+                      <TableCell>{scenario.num_customers || 'NaN'}</TableCell>
+                      <TableCell>{scenario.num_vehicles || 'NaN'}</TableCell>
                       <TableCell 
                         align="right"
                         sx={{ 
-                          color: row.kmChange > 0 ? 'error.main' : 'success.main',
+                          color: 'success.main',
                           fontWeight: 'bold'
                         }}
                       >
-                        {(row.kmChange * 100).toFixed(1)}%
+                        {scenario.savings_km_genetic ? `-${(scenario.savings_km_genetic * 100).toFixed(1)}%` : 'NaN'}
                       </TableCell>
                       <TableCell 
                         align="right"
                         sx={{ 
-                          color: row.waitingTimeChange > 0 ? 'error.main' : 'success.main',
+                          color: 'success.main',
                           fontWeight: 'bold'
                         }}
                       >
-                        {(row.waitingTimeChange * 100).toFixed(1)}%
+                        {scenario.savings_time_genetic ? `-${(scenario.savings_time_genetic * 100).toFixed(1)}%` : 'NaN'}
                       </TableCell>
                     </StyledTableRow>
                   ))}

@@ -2,9 +2,15 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from engine import ScenarioEngine
-from database.session import get_db, init_db
+from database import init_db, get_db
+from sqlalchemy.orm import Session
 import os
 import random
+import requests
+from models.scenario import Scenario
+from dataclasses import asdict
+from threading import Thread
+from database.repositories import ScenarioRepository
 
 app = Flask(__name__)
 
@@ -17,98 +23,93 @@ CORS(app, resources={
     }
 })
 
-# Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/hackathon.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ECHO'] = False  # Disable SQL Alchemy logging
-db = SQLAlchemy(app)
-
-# Initialize database tables
+# Initialize database
 init_db()
 
+# Get database session
+def get_session():
+    db = next(get_db())
+    try:
+        yield db
+    finally:
+        db.close()
+
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/hackathon.db'
+#app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+#app.config['SQLALCHEMY_ECHO'] = False  # Disable SQL Alchemy logging
+db = SQLAlchemy(app)
+
 # Create database session and engine
-db_session = next(get_db())
+db_session = next(get_session())
 engine = ScenarioEngine(db=db_session)
-current_scenario = "7bcbfecf-0193-4792-b2b9-654163bb321a"
 
 @app.route('/')
 def hello():
     return {'message': 'Hello from Flask!'}
 
-@app.route('/create_and_initialize_scenario', methods=['POST'])
-def create_and_initialize_scenario():
-    # Generate random numbers for vehicles and customers
-    num_vehicles = random.randint(15, 30)
-    num_customers = random.randint(55, 60)
-    
-    scenario = engine.create_scenario(
+def call_solver(scenario:Scenario):
+    request_body = {
+        "id": str(scenario.id),
+        "startTime": str(scenario.startTime),
+        "endTime": str(scenario.endTime),
+        "status": scenario.status,
+        "vehicles": [asdict(v) for v in scenario.vehicles] if scenario.vehicles else None,
+        "customers": [asdict(c) for c in scenario.customers] if scenario.customers else None
+    }
+    response = requests.post('http://localhost:5001/solve', json=request_body)
+    return response.json()
+
+@app.route('/run_scenario/<int:num_customers>/<int:num_vehicles>/<float:speed>', methods=['POST'])
+def run_scenario(num_customers:int = 10, num_vehicles:int = 5, speed:float = 0.5):
+    if speed <= 0 or speed > 1:
+        return jsonify({
+            'status': 'error',
+            'message': 'Speed must be between 0 and 1 (exclusive of 0)'
+        }), 400
+
+    # Step 1: Create scenario
+    scenario_dto = engine.create_scenario(
         num_vehicles=num_vehicles,
         num_customers=num_customers
     )
 
-    engine.initialize_scenario(scenario)
-    
-    return jsonify({
-        'status': 'success',
-        'scenario': scenario,
-        'num_vehicles': num_vehicles,
-        'num_customers': num_customers
-    })
-
-@app.route('/launch_scenario/<scenario_id>/<float:speed>', methods=['POST'])
-def launch_scenario(scenario_id, speed):
-    try:
-        # Validate speed parameter
-        if speed <= 0 or speed > 1:
-            return jsonify({
-                'status': 'error',
-                'message': 'Speed must be between 0 and 1 (exclusive of 0)'
-            }), 400
-
-        # Launch the scenario using the engine
-        engine.launch_scenario(scenario_id, speed)
-        
-        return jsonify({
-            'status': 'success',
-            'scenario_id': scenario_id,
-            'speed': speed
-        })
-    except Exception as e:
+    # Get the database scenario object
+    scenario = engine.scenario_repo.get(str(scenario_dto.id))
+    if not scenario:
         return jsonify({
             'status': 'error',
-            'message': str(e)
+            'message': 'Failed to create scenario'
         }), 500
 
-@app.route('/run_scenario/<scenario_id>', methods=['POST'])
-def run_scenario(scenario_id):
-    global current_scenario
-    vehicle_assignments = request.get_json()
-    current_scenario = scenario_id
-    if not isinstance(vehicle_assignments, dict):
-        return jsonify({
-            'status': 'error',
-            'message': 'Request body must be a JSON object with vehicle IDs as keys and customer ID lists as values'
-        }), 400
+    # Step 2: Initialize scenario
+    engine.initialize_scenario(scenario_dto)
+    scenario_solution = call_solver(scenario_dto)
+    assignments = scenario_solution["genetic"]["allocation"]
+    
+    # Update scenario with savings rates
+    scenario.savings_km_genetic = scenario_solution["saving_rates"]["total_distance"]
+    scenario.savings_time_genetic = scenario_solution["saving_rates"]["total_waiting_time"]
+    engine.scenario_repo.update(scenario)
+    
+    # Step 3: Launch scenario in background
+    def run_background():
+        engine.launch_scenario(str(scenario.scenario_id), speed)
+        engine.run_scenario(str(scenario.scenario_id), assignments)
+        engine.scenario_repo.finish(scenario.scenario_id)
+    
+    Thread(target=run_background).start()
 
-    # Validate that all values are lists
-    for vehicle_id, customer_list in vehicle_assignments.items():
-        if not isinstance(customer_list, list):
-            return jsonify({
-                'status': 'error',
-                'message': f'Value for vehicle ID {vehicle_id} must be a list of customer IDs'
-            }), 400
-
-    # Run the scenario using the engine
-    engine.run_scenario(scenario_id, vehicle_assignments)
     return jsonify({
         'status': 'success',
-        'scenario_id': scenario_id,
-        'vehicle_assignments': vehicle_assignments
+        'scenario_id': str(scenario.scenario_id)
     })
+
 
 @app.route('/map_state/', methods=['GET'])
 def get_map_state():
-    if current_scenario == "":
+    scenario_id = request.args.get('scenario_id')
+    if not scenario_id:
         return jsonify({
             'status': 'empty',
             'scenario_id': "",
@@ -117,12 +118,12 @@ def get_map_state():
         })
     try:
         # Get all vehicles and customers for the scenario
-        vehicles = engine.vehicle_repo.get_by_scenario(current_scenario)
-        customers = engine.customer_repo.get_by_scenario(current_scenario)
+        vehicles = engine.vehicle_repo.get_by_scenario(scenario_id)
+        customers = engine.customer_repo.get_by_scenario(scenario_id)
         
         return jsonify({
             'status': 'success',
-            'scenario_id': current_scenario,
+            'scenario_id': scenario_id,
             'vehicles': [v.to_dict() for v in vehicles],
             'customers': [c.to_dict() for c in customers]
         })
@@ -135,25 +136,34 @@ def get_map_state():
 @app.route('/current_scenario', methods=['GET'])
 def get_current_scenario():
     try:
-        # Get the scenario data from the engine
-        #scenario = engine.get_scenario(current_scenario)
-        #utilization = engine.calculate_utilization(current_scenario)
-        #efficiency = engine.calculate_efficiency(current_scenario)
+        scenario_id = request.args.get('scenario_id')
+        if not scenario_id:
+            return jsonify({'error': 'scenario_id is required'}), 400
+
+        db = next(get_session())
+        scenario_repository = ScenarioRepository(db)
+        scenario = scenario_repository.get(scenario_id)
         
+        if not scenario:
+            return jsonify({'error': 'Scenario not found'}), 404
+
+        return jsonify(scenario.to_dict())
+    except Exception as e:
+        app.logger.error(f"Error fetching current scenario: {str(e)}")
+        return jsonify({'error': 'Failed to fetch current scenario'}), 500
+
+@app.route('/scenarios', methods=['GET'])
+def get_all_scenarios():
+    try:
+        db = next(get_session())
+        scenario_repository = ScenarioRepository(db)
+        scenarios = scenario_repository.get_all()
         return jsonify({
-            'status': 'success',
-            'scenario_id': current_scenario,
-            'utilization': 1,
-            'efficiency': 0.4
+            'scenarios': [scenario.to_dict() for scenario in scenarios]
         })
     except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': str(e),
-            'scenario_id': '',
-            'utilization': 0,
-            'efficiency': 0
-        }), 500
+        app.logger.error(f"Error fetching scenarios: {str(e)}")
+        return jsonify({'error': 'Failed to fetch scenarios'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=3333)

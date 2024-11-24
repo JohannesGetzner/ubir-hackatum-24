@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Grid, Card, Container, styled, Typography, Box, keyframes } from '@mui/material';
 import { Vehicle, MapState, mapService } from '../services/mapService';
+import { useScenario } from '../context/ScenarioContext';
+import NoScenarioOverlay from '../components/NoScenarioOverlay';
 
 // Import all vehicle images with exact filenames as they are in the assets directory
 const vehicleImages = {
@@ -80,19 +82,20 @@ const getStatusText = (status: 'idle' | 'cust' | 'dest'): string => {
 const Fleet = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [errorCount, setErrorCount] = useState(0);
-
+  const { scenarioId } = useScenario();
+  
   useEffect(() => {
+    if (!scenarioId) return;
+
     const fetchVehicles = async () => {
       try {
-        const state = await mapService.getMapState();
+        const state = await mapService.getMapState(scenarioId);
         if (state.status === 'error') {
           setErrorCount(prev => prev + 1);
           console.warn('Vehicle state update failed:', state.message);
         } else {
           setErrorCount(0);
-          if (state.vehicles.length > 0) {
-            setVehicles(state.vehicles);
-          }
+          setVehicles(state.vehicles);
         }
       } catch (error) {
         console.error('Failed to fetch vehicles:', error);
@@ -101,9 +104,9 @@ const Fleet = () => {
     };
 
     fetchVehicles();
-    const interval = setInterval(fetchVehicles, 5000);
+    const interval = setInterval(fetchVehicles, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [scenarioId]);
 
   const getVehicleImage = (vehicleName: string) => {
     try {
@@ -126,25 +129,26 @@ const Fleet = () => {
   };
 
   return (
-    <StyledContainer maxWidth={false}>
-      {errorCount > 0 && (
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 16,
-            right: 16,
-            backgroundColor: 'rgba(255, 0, 0, 0.1)',
-            color: 'red',
-            padding: '8px 16px',
-            borderRadius: '4px',
-            zIndex: 1000,
-            pointerEvents: 'none'
-          }}
-        >
-          Connection issues. Using cached data...
-        </Box>
-      )}
+    <Container maxWidth="xl" sx={{ position: 'relative' }}>
+      {!scenarioId && <NoScenarioOverlay />}
       <Grid container spacing={2}>
+        {errorCount > 0 && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              backgroundColor: 'rgba(255, 0, 0, 0.1)',
+              color: 'red',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              zIndex: 1000,
+              pointerEvents: 'none'
+            }}
+          >
+            Connection issues. Using cached data...
+          </Box>
+        )}
         {vehicles.map((vehicle) => (
           <Grid item xs={12} sm={6} md={3} key={vehicle.vehicle_name}>
             <StyledCard>
@@ -183,7 +187,7 @@ const Fleet = () => {
           </Grid>
         ))}
       </Grid>
-    </StyledContainer>
+    </Container>
   );
 };
 

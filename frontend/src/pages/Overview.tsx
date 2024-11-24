@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Paper } from '@mui/material';
+import { Box, Container, Paper, Typography, Button } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import Map from './Map';
@@ -40,6 +40,21 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   minHeight: 0,
 }));
 
+const NoScenarioOverlay = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  zIndex: 1000,
+  gap: theme.spacing(2),
+}));
+
 const Overview = () => {
   const { scenarioId } = useScenario();
   const navigate = useNavigate();
@@ -49,10 +64,27 @@ const Overview = () => {
       sx={{ 
         height: 'calc(100vh - 64px)',
         overflow: 'hidden',
-        p: 2,
-        boxSizing: 'border-box',
+        position: 'relative'
       }}
     >
+      {!scenarioId && (
+        <NoScenarioOverlay>
+          <Typography variant="h5" component="h2" gutterBottom>
+            No Active Scenario
+          </Typography>
+          <Typography variant="body1" color="text.secondary" align="center" sx={{ maxWidth: 400, mb: 2 }}>
+            Start a new scenario in the Simulation page to see the fleet management overview.
+          </Typography>
+          <Button 
+            variant="contained" 
+            color="primary"
+            size="large"
+            onClick={() => navigate('/simulation')}
+          >
+            Start New Scenario
+          </Button>
+        </NoScenarioOverlay>
+      )}
       <GridContainer>
         <TopRow>
           <StyledPaper elevation={2}>

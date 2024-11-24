@@ -214,6 +214,8 @@ class ScenarioEngine:
     def calculate_vehicle_and_customer_position(self, vehicle: Vehicle, customer_id: str = None) -> tuple[float, float]:
         if not customer_id or vehicle.remaining_travel_time <= 0:
             vehicle.enroute = VehicleRouteStatus.IDLE
+            if vehicle.vehicle_speed is None:
+                vehicle.vehicle_speed = 0.0
             self.vehicle_repo.update(vehicle)
             return vehicle.coord_x, vehicle.coord_y
         else:
@@ -272,6 +274,7 @@ class ScenarioEngine:
         # If we're very close to the customer and they're not picked up yet, pick them up
         if not customer.picked_up and progress > 0.95:
             customer.picked_up = True
+            customer.awaiting_service = False
             self.customer_repo.update(customer)
             vehicle.enroute = VehicleRouteStatus.TO_DESTINATION
             self.vehicle_repo.update(vehicle)
@@ -304,7 +307,7 @@ class ScenarioEngine:
             scenario_id,
             initial_batch
         )
-        time.sleep(1)
+        time.sleep(3)
         logging.info("Made initial assignment.")
         current_assignment = self.update_assignment_after_step(scenario_id, current_assignment, initial_batch)
         while True:
@@ -314,8 +317,10 @@ class ScenarioEngine:
                 break
                 
             scenario = self.runner.get_scenario(scenario_id)
-            self.update_vehicles_in_db(scenario_id, scenario["vehicles"]) 
-            available_vehicles = [v for v in scenario["vehicles"] if v["isAvailable"] and v["id"] in assignment.keys()]
+            occupied_vehicles = [v for v in scenario["vehicles"] if v["customerId"] is not None]
+            available_vehicles = [v for v in scenario["vehicles"] if v["customerId"] is None and v["id"] in assignment.keys()]
+            self.update_vehicles_in_db(scenario_id, occupied_vehicles) 
+            
             busy_vehicles = len(assignment) - len(available_vehicles)
             
             logger.info(f"Status: {remaining_customers} customers remaining | {len(available_vehicles)} vehicles free | {busy_vehicles} vehicles occupied")

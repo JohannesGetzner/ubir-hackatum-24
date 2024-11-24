@@ -79,3 +79,17 @@ class Vehicle(Base):
             'active_time': self.active_time,
             'enroute': self.enroute.value
         }
+
+    def to_runner_dict(self):
+        return {
+            "id": self.vehicle_id,
+            "isAvailable": self.is_available,
+            "coordX": self.current_coord_x,
+            "coordY": self.current_coord_y,
+            "customerId": self.current_customer_id,
+            "distanceTravelled": self.distance_travelled,
+            "activeTime": self.active_time,
+            "numberOfTrips": self.number_of_trips,
+            "remainingTravelTime": self.remaining_travel_time,
+            "vehicleSpeed": self.vehicle_speed,
+        }

@@ -18,17 +18,23 @@ export const ScenarioProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const fetchScenarioData = async () => {
       try {
-        const data = await getCurrentScenario();
-        setScenarioId(data.scenario_id);
-        setUtilization(data.utilization);
-        setEfficiency(data.efficiency);
+        // Only fetch if we have a scenario ID
+        if (!scenarioId) return;
+        
+        const data = await getCurrentScenario(scenarioId);
+        if (data.savings_km_genetic !== undefined) {
+          setUtilization(data.savings_km_genetic);
+        }
+        if (data.savings_time_genetic !== undefined) {
+          setEfficiency(data.savings_time_genetic);
+        }
       } catch (error) {
         console.error('Failed to fetch scenario data:', error);
       }
     };
 
     fetchScenarioData();
-  }, []);
+  }, [scenarioId]);
 
   return (
     <ScenarioContext.Provider value={{ 

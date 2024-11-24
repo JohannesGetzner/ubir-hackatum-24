@@ -59,6 +59,10 @@ class ScenarioRepository:
         stmt = select(Scenario).where(Scenario.status == ScenarioStatus.RUNNING)
         return list(self.db.scalars(stmt))
 
+    def get_all(self) -> List[Scenario]:
+        stmt = select(Scenario)
+        return list(self.db.scalars(stmt))
+
     def update(self, scenario: Scenario) -> Scenario:
         self.db.merge(scenario)
         self.db.commit()
