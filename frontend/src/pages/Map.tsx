@@ -101,7 +101,7 @@ const Map = () => {
             container: mapContainer.current,
             style: maptilersdk.MapStyle.STREETS,
             center: [11.5820, 48.1351], // Munich coordinates
-            zoom: 12,
+            zoom: 13,
             preserveDrawingBuffer: true, // Help prevent context loss
             antialias: true
           });

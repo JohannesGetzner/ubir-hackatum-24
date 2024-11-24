@@ -50,7 +50,7 @@ class ScenarioRunnerClient:
         Returns:
             dict: Response from server containing message, scenario_id and startTime
         """
-        speed = 0.01
+        speed = 0.15
         url = f"{self.base_url}/Runner/launch_scenario/{scenario_id}"
         response = requests.post(url, params={"speed": speed})
         return response.json()
