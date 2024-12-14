@@ -227,7 +227,7 @@ const Map = () => {
     };
 
     fetchMapState();
-    const interval = setInterval(fetchMapState, 2000); // Reduced frequency to 2 seconds
+    const interval = setInterval(fetchMapState, 250 ); // Reduced frequency to 2 seconds
     return () => clearInterval(interval);
   }, [scenarioId]);
 
@@ -325,16 +325,24 @@ const Map = () => {
         // Update customer markers
         mapState.customers.forEach((customer: Customer) => {
           const marker = customerMarkers.current[customer.id];
+          const destMarkerId = `${customer.id}-dest`;
+          const destMarker = customerMarkers.current[destMarkerId];
           
-          // Remove marker if customer is dropped off
-          if (customer.dropped_off) {
+          // Remove markers if customer location matches destination exactly
+          if (customer.destination_longitude === customer.longitude && 
+              customer.destination_latitude === customer.latitude) {
             if (marker) {
               marker.remove();
               delete customerMarkers.current[customer.id];
             }
+            if (destMarker) {
+              destMarker.remove();
+              delete customerMarkers.current[destMarkerId];
+            }
             return;
           }
           
+          // Update or create customer marker
           if (marker) {
             marker.setLngLat([customer.longitude, customer.latitude]);
           } else if (mapInstance) {
@@ -348,20 +356,8 @@ const Map = () => {
               .addTo(mapInstance);
           }
 
-          // Add destination marker if customer has a destination
+          // Update or create destination marker
           if (customer.destination_longitude && customer.destination_latitude) {
-            const destMarkerId = `${customer.id}-dest`;
-            const destMarker = customerMarkers.current[destMarkerId];
-            
-            // Remove destination marker if customer is dropped off
-            if (customer.dropped_off) {
-              if (destMarker) {
-                destMarker.remove();
-                delete customerMarkers.current[destMarkerId];
-              }
-              return;
-            }
-            
             if (destMarker) {
               destMarker.setLngLat([customer.destination_longitude, customer.destination_latitude]);
             } else if (mapInstance) {

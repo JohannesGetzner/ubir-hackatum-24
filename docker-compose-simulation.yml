@@ -1,25 +1,27 @@
 services:
-  backend:
+  simulation-backend:
     image: mikechatzis/hackatumtsichallenge:backend
     ports:
       - "8080:8080"
     restart: always
     depends_on:
-      postgres:
+      simulation-postgres:
         condition: service_healthy
-  scenariorunner:
+    networks:
+      - simulation
+  simulation-runner:
     image: mikechatzis/hackatumtsichallenge:scenariorunner
     ports:
       - "8090:8090"
     restart: always
     depends_on:
-      backend:
+      simulation-backend:
         condition: service_started
-      frontend:
+      simulation-frontend:
         condition: service_started
-      postgres:
+      simulation-postgres:
         condition: service_healthy
-  postgres:
+  simulation-postgres:
     image: postgres:13-alpine
     hostname: postgres
     environment:
@@ -34,15 +36,16 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-  frontend:
+    networks:
+      - simulation
+  simulation-frontend:
     image: mikechatzis/hackatumtsichallenge:frontend
     ports:
       - "9000:9000"
     restart: always
     depends_on:
-      backend:
+      simulation-backend:
         condition: service_started
-
 networks:
-  default:
+  simulation:
     driver: bridge

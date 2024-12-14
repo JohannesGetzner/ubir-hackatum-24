@@ -2,7 +2,7 @@ import random
 from typing import Optional, List
 from uuid import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Float, Boolean, ForeignKey
+from sqlalchemy import String, Float, Boolean, ForeignKey, UniqueConstraint
 
 from .base import Base
 
@@ -13,6 +13,9 @@ def get_random_name():
 
 class Customer(Base):
     __tablename__ = "customers"
+    __table_args__ = (
+        UniqueConstraint('customer_id', name='uq_customer_id'),
+    )
 
     scenario_id: Mapped[UUID] = mapped_column(String, ForeignKey("scenarios.scenario_id"), primary_key=True)
     customer_id: Mapped[UUID] = mapped_column(String, primary_key=True)
@@ -34,6 +37,7 @@ class Customer(Base):
     def to_dict(self) -> dict:
         """Convert Customer instance to a dictionary for map visualization."""
         return {
+            'customer_id': str(self.customer_id),
             'id': str(self.customer_id),
             'scenario_id': str(self.scenario_id),
             'fake_name': str(get_random_name()),

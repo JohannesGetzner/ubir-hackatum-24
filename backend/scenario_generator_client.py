@@ -24,7 +24,7 @@ class ScenarioMetadataDTO:
     vehicle_data: List[VehicleDataDto]
 
 @dataclass
-class StandardMagentaVehicleDTO:
+class VehicleDTO:
     id: UUID
     coordX: float
     coordY: float
@@ -51,12 +51,24 @@ class ScenarioDTO:
     startTime: str
     endTime: str
     status: str
-    vehicles: List[StandardMagentaVehicleDTO]
+    vehicles: List[VehicleDTO]
     customers: List[CustomerDTO]
 
 class ScenarioGeneratorClient:
-    def __init__(self, base_url: str = "http://backend:8080"):
+    def __init__(self, base_url: str = "http://localhost:8080"):
         self.base_url = base_url.rstrip('/')
+
+    def scenario_json_to_dto(self, scenario_json):
+        vehicles = [VehicleDTO(**vehicle) for vehicle in scenario_json.get('vehicles', [])]
+        customers = [CustomerDTO(**customer) for customer in scenario_json.get('customers', [])]
+        return ScenarioDTO(
+            id=UUID(scenario_json['id']) if isinstance(scenario_json['id'], str) else scenario_json['id'],
+            startTime=scenario_json['startTime'],
+            endTime=scenario_json['endTime'],
+            status=scenario_json['status'],
+            vehicles=vehicles,
+            customers=customers
+        )
 
     def create_scenario(self, num_vehicles: Optional[int] = None, num_customers: Optional[int] = None) -> ScenarioDTO:
         """
@@ -78,21 +90,7 @@ class ScenarioGeneratorClient:
         response = requests.post(f"{self.base_url}/scenario/create", params=params)
         response.raise_for_status()
         data = response.json()
-        
-        # Properly initialize nested objects
-        vehicles = [StandardMagentaVehicleDTO(**vehicle) for vehicle in data.get('vehicles', [])]
-        customers = [CustomerDTO(**customer) for customer in data.get('customers', [])]
-        
-        # Create the scenario with properly initialized nested objects
-        scenario_dto = ScenarioDTO(
-            id=UUID(data['id']) if isinstance(data['id'], str) else data['id'],
-            startTime=data['startTime'],
-            endTime=data['endTime'],
-            status=data['status'],
-            vehicles=vehicles,
-            customers=customers
-        )
-        return scenario_dto
+        return self.scenario_json_to_dto(data)
 
     def get_all_scenarios(self) -> List[ScenarioDTO]:
         """
@@ -103,7 +101,7 @@ class ScenarioGeneratorClient:
         """
         response = requests.get(f"{self.base_url}/scenarios")
         response.raise_for_status()
-        return [ScenarioDTO(**scenario) for scenario in response.json()]
+        return [self.scenario_json_to_dto(scenario) for scenario in response.json()]
 
     def get_scenario_by_id(self, scenario_id: UUID) -> ScenarioDTO:
         """
@@ -117,7 +115,7 @@ class ScenarioGeneratorClient:
         """
         response = requests.get(f"{self.base_url}/scenarios/{scenario_id}")
         response.raise_for_status()
-        return ScenarioDTO(**response.json())
+        return self.scenario_json_to_dto(response.json())
 
     def delete_scenario_by_id(self, scenario_id: UUID) -> ResponseMessage:
         """
@@ -147,7 +145,7 @@ class ScenarioGeneratorClient:
         response.raise_for_status()
         return ScenarioMetadataDTO(**response.json())
 
-    def get_all_vehicles_by_scenario_id(self, scenario_id: UUID) -> List[StandardMagentaVehicleDTO]:
+    def get_all_vehicles_by_scenario_id(self, scenario_id: UUID) -> List[VehicleDTO]:
         """
         Get all vehicles for a specific scenario.
         
@@ -159,9 +157,9 @@ class ScenarioGeneratorClient:
         """
         response = requests.get(f"{self.base_url}/scenarios/{scenario_id}/vehicles")
         response.raise_for_status()
-        return [StandardMagentaVehicleDTO(**vehicle) for vehicle in response.json()]
+        return [VehicleDTO(**vehicle) for vehicle in response.json()]
 
-    def get_vehicle_by_id(self, vehicle_id: UUID) -> StandardMagentaVehicleDTO:
+    def get_vehicle_by_id(self, vehicle_id: UUID) -> VehicleDTO:
         """
         Get a vehicle by its ID.
         
@@ -173,7 +171,7 @@ class ScenarioGeneratorClient:
         """
         response = requests.get(f"{self.base_url}/vehicles/{vehicle_id}")
         response.raise_for_status()
-        return StandardMagentaVehicleDTO(**response.json())
+        return VehicleDTO(**response.json())
 
     def get_all_customers_by_scenario_id(self, scenario_id: UUID) -> List[CustomerDTO]:
         """

@@ -3,7 +3,7 @@ from typing import Optional, List
 from uuid import UUID
 from enum import Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Float, Boolean, Integer, ForeignKey, Enum as SQLEnum
+from sqlalchemy import String, Float, Boolean, Integer, ForeignKey, Enum as SQLEnum, UniqueConstraint
 
 from .base import Base
 
@@ -18,6 +18,9 @@ def get_random_car():
 
 class Vehicle(Base):
     __tablename__ = "vehicles"
+    __table_args__ = (
+        UniqueConstraint('vehicle_id', name='uq_vehicle_id'),
+    )
 
     scenario_id: Mapped[UUID] = mapped_column(String, ForeignKey("scenarios.scenario_id"), primary_key=True)
     vehicle_id: Mapped[UUID] = mapped_column(String, primary_key=True)
@@ -33,38 +36,17 @@ class Vehicle(Base):
     number_of_trips: Mapped[int] = mapped_column(Integer, default=0)
     remaining_travel_time: Mapped[float] = mapped_column(Float, default=0.0)
     vehicle_speed: Mapped[float] = mapped_column(Float, default=1.0)
-    enroute: Mapped[VehicleRouteStatus] = mapped_column(SQLEnum(VehicleRouteStatus), default=VehicleRouteStatus.TO_CUSTOMER)
+    enroute: Mapped[VehicleRouteStatus] = mapped_column(SQLEnum(VehicleRouteStatus), default=VehicleRouteStatus.IDLE)
 
     # Relationships
     scenario: Mapped["Scenario"] = relationship("Scenario", back_populates="vehicles")
     current_customer: Mapped[Optional["Customer"]] = relationship("Customer", back_populates="assigned_vehicle")
     assignments: Mapped[List["Assignment"]] = relationship("Assignment", back_populates="vehicle")
 
-    @classmethod
-    def from_dict(cls, scenario_id: str, vehicle_dict: dict) -> "Vehicle":
-        """Convert a dictionary to a Vehicle instance."""
-        enroute_status = VehicleRouteStatus.TO_CUSTOMER
-        if not vehicle_dict.get("customerId"):
-            enroute_status = VehicleRouteStatus.IDLE
-        
-        return cls(
-            scenario_id=str(scenario_id),
-            vehicle_id=str(vehicle_dict["id"]),
-            active_time=vehicle_dict.get("activeTime", 0.0),
-            is_available=vehicle_dict.get("isAvailable", True),
-            current_customer_id=vehicle_dict.get("customerId", None),
-            number_of_trips=vehicle_dict.get("numberOfTrips", 0),
-            remaining_travel_time=vehicle_dict.get("remainingTravelTime", 0.0) if vehicle_dict.get("remainingTravelTime") is not None else 0.0,
-            vehicle_speed=vehicle_dict.get("vehicleSpeed", 1.0),
-            distance_travelled=vehicle_dict.get("distanceTravelled", 0.0),
-            coord_x=vehicle_dict.get("coordX", 0.0),
-            coord_y=vehicle_dict.get("coordY", 0.0),
-            enroute=enroute_status
-        )
-
     def to_dict(self) -> dict:
         """Convert Vehicle instance to a dictionary for map visualization."""
         return {
+            'vehicle_id': str(self.vehicle_id),
             'id': str(self.vehicle_id),
             'scenario_id': str(self.scenario_id),
             'vehicle_name': str(get_random_car()),
@@ -78,18 +60,4 @@ class Vehicle(Base):
             'distance_travelled': self.distance_travelled,
             'active_time': self.active_time,
             'enroute': self.enroute.value
-        }
-
-    def to_runner_dict(self):
-        return {
-            "id": self.vehicle_id,
-            "isAvailable": self.is_available,
-            "coordX": self.current_coord_x,
-            "coordY": self.current_coord_y,
-            "customerId": self.current_customer_id,
-            "distanceTravelled": self.distance_travelled,
-            "activeTime": self.active_time,
-            "numberOfTrips": self.number_of_trips,
-            "remainingTravelTime": self.remaining_travel_time,
-            "vehicleSpeed": self.vehicle_speed,
         }

@@ -23,14 +23,14 @@ class CustomerRepository:
         self.db.refresh(customer)
         return customer
 
-    def get(self, scenario_id: UUID, customer_id: UUID) -> Optional[Customer]:
+    def get(self, scenario_id: str, customer_id: str) -> Optional[Customer]:
         return self.db.get(Customer, {"scenario_id": scenario_id, "customer_id": customer_id})
 
-    def get_by_scenario(self, scenario_id: UUID) -> List[Customer]:
+    def get_by_scenario(self, scenario_id: str) -> List[Customer]:
         stmt = select(Customer).where(Customer.scenario_id == scenario_id)
         return list(self.db.scalars(stmt))
 
-    def get_waiting(self, scenario_id: UUID) -> List[Customer]:
+    def get_waiting(self, scenario_id: str) -> List[Customer]:
         stmt = select(Customer).where(
             Customer.scenario_id == scenario_id,
             Customer.awaiting_service == True
@@ -42,17 +42,25 @@ class CustomerRepository:
         self.db.commit()
         return customer
 
+    def batch_update(self, customers: List[Customer]):
+        self.db.bulk_update_mappings(Customer, [customer.to_dict() for customer in customers])
+        self.db.commit()
+
 class ScenarioRepository:
     def __init__(self, db: Session):
         self.db = db
 
     def create(self, scenario: Scenario) -> Scenario:
+        if isinstance(scenario.scenario_id, UUID):
+            scenario.scenario_id = str(scenario.scenario_id)
         self.db.add(scenario)
         self.db.commit()
         self.db.refresh(scenario)
         return scenario
 
-    def get(self, scenario_id: UUID) -> Optional[Scenario]:
+    def get(self, scenario_id: str) -> Optional[Scenario]:
+        if isinstance(scenario_id, UUID):
+            scenario_id = str(scenario_id)
         return self.db.get(Scenario, scenario_id)
 
     def get_active(self) -> List[Scenario]:
@@ -60,15 +68,17 @@ class ScenarioRepository:
         return list(self.db.scalars(stmt))
 
     def get_all(self) -> List[Scenario]:
-        stmt = select(Scenario)
+        stmt = select(Scenario).order_by(Scenario.start_time.desc())
         return list(self.db.scalars(stmt))
 
     def update(self, scenario: Scenario) -> Scenario:
+        if isinstance(scenario.scenario_id, UUID):
+            scenario.scenario_id = str(scenario.scenario_id)
         self.db.merge(scenario)
         self.db.commit()
         return scenario
 
-    def finish(self, scenario_id: UUID) -> Optional[Scenario]:
+    def finish(self, scenario_id: str) -> Optional[Scenario]:
         scenario = self.get(scenario_id)
         if scenario:
             scenario.status = ScenarioStatus.FINISHED
@@ -86,14 +96,14 @@ class VehicleRepository:
         self.db.refresh(vehicle)
         return vehicle
 
-    def get(self, scenario_id: UUID, vehicle_id: UUID) -> Optional[Vehicle]:
+    def get(self, scenario_id: str, vehicle_id: str) -> Optional[Vehicle]:
         return self.db.get(Vehicle, {"scenario_id": scenario_id, "vehicle_id": vehicle_id})
 
-    def get_by_scenario(self, scenario_id: UUID) -> List[Vehicle]:
+    def get_by_scenario(self, scenario_id: str) -> List[Vehicle]:
         stmt = select(Vehicle).where(Vehicle.scenario_id == scenario_id)
         return list(self.db.scalars(stmt))
 
-    def get_available(self, scenario_id: UUID) -> List[Vehicle]:
+    def get_available(self, scenario_id: str) -> List[Vehicle]:
         stmt = select(Vehicle).where(
             Vehicle.scenario_id == scenario_id,
             Vehicle.is_available == True
@@ -104,6 +114,10 @@ class VehicleRepository:
         self.db.merge(vehicle)
         self.db.commit()
         return vehicle
+
+    def batch_update(self, vehicles: List[Vehicle]):
+        self.db.bulk_update_mappings(Vehicle, [vehicle.to_dict() for vehicle in vehicles])
+        self.db.commit()
 
     def assign_customer(self, vehicle: Vehicle, customer: Customer) -> Vehicle:
         vehicle.current_customer_id = customer.customer_id

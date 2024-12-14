@@ -1,42 +1,14 @@
-from typing import Dict, Any, List
 import requests
+import time
+from typing import Dict, Any, List
 from datetime import datetime
 from dataclasses import dataclass, asdict
 from typing import Optional
+from models.scenario import Scenario
 
-@dataclass
-class Vehicle:
-    id: str
-    coordX: float
-    coordY: float
-    isAvailable: Optional[bool] = None
-    vehicleSpeed: Optional[float] = None
-    customerId: Optional[str] = None
-    remainingTravelTime: Optional[float] = None
-    distanceTravelled: Optional[float] = None
-    activeTime: Optional[float] = None
-    numberOfTrips: Optional[int] = None
-
-@dataclass
-class Customer:
-    id: str
-    coordX: Optional[float] = None
-    coordY: Optional[float] = None
-    destinationX: Optional[float] = None
-    destinationY: Optional[float] = None
-    awaitingService: Optional[bool] = None
-
-@dataclass
-class Scenario:
-    id: str
-    startTime: Optional[str] = None
-    endTime: Optional[str] = None
-    status: Optional[str] = None
-    vehicles: Optional[List[Vehicle]] = None
-    customers: Optional[List[Customer]] = None
 
 class ScenarioRunnerClient:
-    def __init__(self, base_url: str = "http://scenariorunner:8090"):
+    def __init__(self, base_url: str = "http://localhost:8090"):
         self.base_url = base_url.rstrip('/')
 
     def launch_scenario(self, scenario_id: str, speed: float = 0.2) -> dict:
@@ -50,7 +22,6 @@ class ScenarioRunnerClient:
         Returns:
             dict: Response from server containing message, scenario_id and startTime
         """
-        speed = 0.15
         url = f"{self.base_url}/Runner/launch_scenario/{scenario_id}"
         response = requests.post(url, params={"speed": speed})
         return response.json()
@@ -67,6 +38,7 @@ class ScenarioRunnerClient:
         """
         url = f"{self.base_url}/Scenarios/get_scenario/{scenario_id}"
         response = requests.get(url)
+
         return response.json()
 
     def initialize_scenario(self, scenario: Scenario, db_scenario_id: Optional[str] = None) -> bool:
@@ -116,4 +88,5 @@ class ScenarioRunnerClient:
             url,
             json={"vehicles": vehicle_updates}
         )
+        time.sleep(1)
         return True

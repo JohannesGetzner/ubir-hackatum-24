@@ -11,12 +11,17 @@ services:
     environment:
       - FLASK_APP=run.py
       - FLASK_ENV=development
+      - POSTGRES_USER=hackatum
+      - POSTGRES_PASSWORD=hackatum2024
+      - POSTGRES_DB=hackatum
+      - DATABASE_URL=postgresql://hackatum:hackatum2024@app-postgres:5433/hackatum
     volumes:
       - ./backend:/app
-      - sqlite_data:/app/instance
     networks:
       - app-network
       - simulation
+    depends_on:
+      - app-postgres
 
   app-solver:
     container_name: app-solver
@@ -40,7 +45,6 @@ services:
       - "3001:3000"
     volumes:
       - grafana_data:/var/lib/grafana
-      - sqlite_data:/var/lib/grafana/hackathon:ro
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -50,14 +54,28 @@ services:
     networks:
       - app-network
 
+  app-postgres:
+    container_name: app-postgres
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=hackatum
+      - POSTGRES_PASSWORD=hackatum2024
+      - POSTGRES_DB=hackatum
+      - POSTGRES_PORT=5433
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5433"
+    command: -p 5433
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
   simulation:
-    name: hackatum24_default
-    external: true
+    driver: bridge
 
 volumes:
   grafana_data:
-  sqlite_data:
-    name: sqlite_data_clean
+  postgres_data:

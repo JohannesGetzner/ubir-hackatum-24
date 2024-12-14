@@ -16,7 +16,7 @@ const TopBar: React.FC<TopBarProps> = ({ spacing = 2 }) => {
   const { utilization, efficiency } = useScenario();
 
   const formatPercentage = (value: number) => {
-    return `${Math.round(value * 100)}%`;
+    return `${Math.round(value * 100)}`;
   };
 
   const metrics = [

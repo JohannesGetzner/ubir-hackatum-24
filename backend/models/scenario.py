@@ -3,13 +3,14 @@ from typing import Optional, List
 from uuid import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Float, DateTime, Enum as SQLAEnum, Integer
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
 
 from .base import Base, ScenarioStatus
 
 class Scenario(Base):
     __tablename__ = "scenarios"
 
-    scenario_id: Mapped[UUID] = mapped_column(String, primary_key=True)
+    scenario_id: Mapped[str] = mapped_column(String, primary_key=True)
     start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     end_time: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     status: Mapped[ScenarioStatus] = mapped_column(

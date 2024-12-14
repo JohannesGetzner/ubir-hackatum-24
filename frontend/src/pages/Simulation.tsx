@@ -234,6 +234,7 @@ const Simulation = () => {
   const [numVehicles, setNumVehicles] = useState(5);
   const [numCustomers, setNumCustomers] = useState(10);
   const { setScenarioId } = useScenario();
+  const [progress, setProgress] = useState(0);
 
   // Initial fetch of scenarios
   useEffect(() => {
@@ -290,6 +291,25 @@ const Simulation = () => {
     event.preventDefault();
     setLoading(true);
     setError(null);
+    setProgress(0);
+    
+    // Start progress animation
+    const startProgress = () => {
+      let currentProgress = 0;
+      const interval = setInterval(() => {
+        const increment = Math.random() * 5 + 1; // Random increment between 1 and 6
+        currentProgress = Math.min(currentProgress + increment, 100);
+        setProgress(Math.floor(currentProgress));
+        
+        if (currentProgress >= 100) {
+          clearInterval(interval);
+        }
+      }, 100); // Update every 100ms
+      
+      return interval;
+    };
+    
+    const progressInterval = startProgress();
     
     try {
       const result = await runScenario(numCustomers, numVehicles, 0.1);
@@ -302,7 +322,12 @@ const Simulation = () => {
       setError('Failed to run scenario');
       console.error('Error running scenario:', err);
     } finally {
-      setLoading(false);
+      clearInterval(progressInterval);
+      setProgress(100);
+      setTimeout(() => {
+        setLoading(false);
+        setProgress(0);
+      }, 500); // Show 100% briefly before resetting
     }
   };
 
@@ -386,7 +411,7 @@ const Simulation = () => {
             <Box sx={{ position: 'relative', display: 'inline-flex' }}>
               <CircularProgress
                 variant="determinate"
-                value={0}
+                value={progress}
                 size={140}
                 thickness={4}
                 sx={{
@@ -435,7 +460,7 @@ const Simulation = () => {
                       textShadow: '0 0 10px rgba(255,255,255,0.8)',
                     }}
                   >
-                    {`${0}%`}
+                    {`${progress}%`}
                   </Typography>
                 ) : (
                   <Box
