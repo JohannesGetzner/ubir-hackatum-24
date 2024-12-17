@@ -239,6 +239,15 @@ class ScenarioEngine:
                 db_vehicle.current_customer_id = scenario_vehicle.customerId
                 if db_vehicle.enroute == VehicleRouteStatus.IDLE:
                     db_vehicle.enroute = VehicleRouteStatus.TO_CUSTOMER
+            else:
+                # Check if there are any active assignments for this vehicle when it has no customer
+                active_assignment = self.assignment_repo.get_active_assignment(self.active_scenario, db_vehicle.vehicle_id)
+                if active_assignment is not None:
+                    # Reassign the customer ID from the active assignment
+                    db_vehicle.current_customer_id = active_assignment.customer_id
+                    logger.info(f"Reassigned customer {db_vehicle.current_customer_id} to vehicle {db_vehicle.vehicle_id}")
+                    if db_vehicle.enroute == VehicleRouteStatus.IDLE:
+                        db_vehicle.enroute = VehicleRouteStatus.TO_CUSTOMER
             # now update vehicle if busy
             if db_vehicle.current_customer_id is not None:
                 db_customer = self.customer_repo.get(self.active_scenario, db_vehicle.current_customer_id)
@@ -342,7 +351,7 @@ class ScenarioEngine:
             if all(c.awaiting_service == False for c in all_customers):
                 logger.info("All customers have been served. Scenario complete.")
                 break
-            time.sleep(0.5)
+            time.sleep(1.5)
         return True
 
 

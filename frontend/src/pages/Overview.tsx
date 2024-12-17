@@ -1,56 +1,56 @@
-import React from 'react';
-import { Box, Container, Paper, Typography, Button } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
-import Map from './Map';
-import { useScenario } from '../context/ScenarioContext';
+import React, { useEffect, useState } from "react";
+import { Box, Container, Paper, Typography, Button } from "@mui/material";
+import { styled } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
+import Map from "./Map";
+import { useScenario } from "../context/ScenarioContext";
 
 const GridContainer = styled(Box)(({ theme }) => ({
-  display: 'grid',
+  display: "grid",
   gap: theme.spacing(2),
-  gridTemplateRows: 'minmax(0, 1fr) minmax(0, 1fr)',
-  width: '100%',
-  height: '100%',
+  gridTemplateRows: "minmax(0, 1fr) minmax(0, 1fr)",
+  width: "100%",
+  height: "100%",
   minHeight: 0,
 }));
 
 const TopRow = styled(Box)(({ theme }) => ({
-  display: 'grid',
+  display: "grid",
   gap: theme.spacing(2),
-  gridTemplateColumns: '2fr 1fr',
-  width: '100%',
+  gridTemplateColumns: "2fr 1fr",
+  width: "100%",
   minHeight: 0,
 }));
 
 const BottomRow = styled(Box)(({ theme }) => ({
-  display: 'grid',
+  display: "grid",
   gap: theme.spacing(2),
-  gridTemplateColumns: '1fr 1fr 1fr',
-  width: '100%',
+  gridTemplateColumns: "1fr 1fr 1fr",
+  width: "100%",
   minHeight: 0,
 }));
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
-  height: '100%',
+  height: "100%",
   backgroundColor: theme.palette.background.paper,
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
+  display: "flex",
+  flexDirection: "column",
+  overflow: "hidden",
   minHeight: 0,
 }));
 
 const NoScenarioOverlay = styled(Box)(({ theme }) => ({
-  position: 'absolute',
+  position: "absolute",
   top: 0,
   left: 0,
   right: 0,
   bottom: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "rgba(255, 255, 255, 0.9)",
   zIndex: 1000,
   gap: theme.spacing(2),
 }));
@@ -58,13 +58,22 @@ const NoScenarioOverlay = styled(Box)(({ theme }) => ({
 const Overview = () => {
   const { scenarioId } = useScenario();
   const navigate = useNavigate();
-  
+  const [timestamp, setTimestamp] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimestamp(Date.now());
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <Box 
-      sx={{ 
-        height: 'calc(100vh - 64px)',
-        overflow: 'hidden',
-        position: 'relative'
+    <Box
+      sx={{
+        height: "calc(100vh - 64px)",
+        overflow: "hidden",
+        position: "relative",
       }}
     >
       {!scenarioId && (
@@ -72,14 +81,20 @@ const Overview = () => {
           <Typography variant="h5" component="h2" gutterBottom>
             No Active Scenario
           </Typography>
-          <Typography variant="body1" color="text.secondary" align="center" sx={{ maxWidth: 400, mb: 2 }}>
-            Start a new scenario in the Simulation page to see the fleet management overview.
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            align="center"
+            sx={{ maxWidth: 400, mb: 2 }}
+          >
+            Start a new scenario in the Simulation page to see the fleet
+            management overview.
           </Typography>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             color="primary"
             size="large"
-            onClick={() => navigate('/simulation')}
+            onClick={() => navigate("/simulation")}
           >
             Start New Scenario
           </Button>
@@ -87,19 +102,20 @@ const Overview = () => {
       )}
       <GridContainer>
         <TopRow>
+          <p>{scenarioId}</p>
           <StyledPaper elevation={2}>
             <iframe
-              src={`http://localhost:3001/d-solo/de4vgrih5uupsa/hackatum?orgId=1&from=1732417848837&to=1732419050299&timezone=browser&var-scenario_id=${scenarioId}&showCategory=Panel%20options&theme=light&panelId=3&__feature.dashboardSceneSolo`}
-              style={{ width: '100%', height: '100%', border: 'none' }}
+              src={`http://localhost:3001/d-solo/be77oaroke0w0e/hackatum?orgId=1&timezone=browser&showCategory=Thresholds&var-query0=&var-scenarioId=9b6038dd-10aa-4fc3-a6ee-5cb5b69af6df&editIndex=0&refresh=5s&theme=light&panelId=4&__feature.dashboardSceneSolo&refresh=${timestamp}`}
+              style={{ width: "100%", height: "100%", border: "none" }}
               title="Grafana Dashboard 1"
               allow="fullscreen"
               sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
             />
           </StyledPaper>
-          <StyledPaper elevation={2} sx={{ overflow: 'hidden', padding: 0 }}>
-            <iframe
-              src={`http://localhost:3001/d-solo/de4vgrih5uupsa/hackatum?orgId=1&from=1732396896678&to=1732418496678&timezone=browser&var-scenario_id=${scenarioId}&theme=light&panelId=1&__feature.dashboardSceneSolo`}
-              style={{ width: '100%', height: '100%', border: 'none' }}
+          <StyledPaper elevation={2} sx={{ overflow: "hidden", padding: 0 }}>
+            <iframe 
+              src={`http://localhost:3001/d-solo/be77oaroke0w0e/hackatum?orgId=1&from=1734202800000&to=1734213600000&timezone=browser&var-scenarioId=${scenarioId}&showCategory=Thresholds&theme=light&panelId=3&__feature.dashboardSceneSolo&refresh=${timestamp}`}
+              style={{ width: "100%", height: "100%", border: "none" }}
               title="Grafana Dashboard 2"
               allow="fullscreen"
               sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
@@ -107,36 +123,36 @@ const Overview = () => {
           </StyledPaper>
         </TopRow>
         <BottomRow>
-          <StyledPaper 
-            elevation={2} 
-            sx={{ 
-              overflow: 'hidden', 
-              padding: 0, 
-              minHeight: '300px',
-              cursor: 'pointer',
-              '&:hover': {
+          <StyledPaper
+            elevation={2}
+            sx={{
+              overflow: "hidden",
+              padding: 0,
+              minHeight: "300px",
+              cursor: "pointer",
+              "&:hover": {
                 opacity: 0.9,
-              }
+              },
             }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate("/map")}
           >
-            <Box sx={{ width: '100%', height: '100%' }}>
+            <Box sx={{ width: "100%", height: "100%" }}>
               <Map />
             </Box>
           </StyledPaper>
-          <StyledPaper elevation={2} sx={{ overflow: 'hidden', padding: 0 }}>
-            <iframe
-              src={`http://localhost:3001/d-solo/de4vgrih5uupsa/hackatum?orgId=1&from=1732397903489&to=1732419503490&timezone=browser&var-scenario_id=${scenarioId}&theme=light&panelId=4&__feature.dashboardSceneSolo`}
-              style={{ width: '100%', height: '100%', border: 'none' }}
-              title="Grafana Dashboard 4"
-              allow="fullscreen"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-            />
+          <StyledPaper elevation={2} sx={{ overflow: "hidden", padding: 0 }}>
+          <iframe
+            src={`http://localhost:3001/d-solo/be77oaroke0w0e/hackatum?orgId=1&from=1734202800000&to=1734213600000&timezone=browser&var-scenarioId=${scenarioId}&showCategory=Thresholds&theme=light&panelId=2&__feature.dashboardSceneSolo&refresh=${timestamp}`}
+            style={{ width: "100%", height: "100%", border: "none" }}
+            title="Grafana Dashboard 3"
+            allow="fullscreen"
+            sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+          />
           </StyledPaper>
-          <StyledPaper elevation={2} sx={{ overflow: 'hidden', padding: 0 }}>
+          <StyledPaper elevation={2} sx={{ overflow: "hidden", padding: 0 }}>
             <iframe
-              src={`http://localhost:3001/d-solo/de4vgrih5uupsa/hackatum?orgId=1&from=1732396896678&to=1732418496678&timezone=browser&var-scenario_id=${scenarioId}&showCategory=Panel%20options&theme=light&panelId=2&__feature.dashboardSceneSolo`}
-              style={{ width: '100%', height: '100%', border: 'none' }}
+              src={`http://localhost:3001/d-solo/be77oaroke0w0e/hackatum?orgId=1&from=1734202800000&to=1734213600000&timezone=browser&var-scenarioId=${scenarioId}&showCategory=Thresholds&theme=light&panelId=1&__feature.dashboardSceneSolo&refresh=${timestamp}`}
+              style={{ width: "100%", height: "100%", border: "none" }}
               title="Grafana Dashboard 3"
               allow="fullscreen"
               sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
@@ -147,5 +163,5 @@ const Overview = () => {
     </Box>
   );
 };
-  
+
 export default Overview;
