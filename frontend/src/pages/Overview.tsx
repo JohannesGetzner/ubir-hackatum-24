@@ -102,7 +102,6 @@ const Overview = () => {
       )}
       <GridContainer>
         <TopRow>
-          <p>{scenarioId}</p>
           <StyledPaper elevation={2}>
             <iframe
               src={`http://localhost:3001/d-solo/be77oaroke0w0e/hackatum?orgId=1&timezone=browser&showCategory=Thresholds&var-query0=&var-scenarioId=9b6038dd-10aa-4fc3-a6ee-5cb5b69af6df&editIndex=0&refresh=5s&theme=light&panelId=4&__feature.dashboardSceneSolo&refresh=${timestamp}`}
